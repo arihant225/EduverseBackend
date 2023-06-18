@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "w4Qtcl9XrPyLE61TaNyWVh+09c9tPaE8tNGIphRBFas=",
+  "Source": "Eduverse.Backend.WebApi",
+  "BasePath": "_content/Eduverse.Backend.WebApi",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

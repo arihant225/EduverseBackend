@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\Eduverse.Backend.WebApi.props" />
+</Project>

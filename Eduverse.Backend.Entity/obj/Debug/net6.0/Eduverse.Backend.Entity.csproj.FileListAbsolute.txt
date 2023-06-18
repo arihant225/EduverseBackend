@@ -1,0 +1,14 @@
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\bin\Debug\net6.0\Eduverse.Backend.Entity.deps.json
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\bin\Debug\net6.0\Eduverse.Backend.Entity.runtimeconfig.json
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\bin\Debug\net6.0\Eduverse.Backend.Entity.dll
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\bin\Debug\net6.0\Eduverse.Backend.Entity.pdb
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\obj\Debug\net6.0\Eduverse.Backend.Entity.csproj.AssemblyReference.cache
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\obj\Debug\net6.0\Eduverse.Backend.Entity.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\obj\Debug\net6.0\Eduverse.Backend.Entity.AssemblyInfoInputs.cache
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\obj\Debug\net6.0\Eduverse.Backend.Entity.AssemblyInfo.cs
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\obj\Debug\net6.0\Eduverse.Backend.Entity.csproj.CoreCompileInputs.cache
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\obj\Debug\net6.0\Eduverse.Backend.Entity.dll
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\obj\Debug\net6.0\refint\Eduverse.Backend.Entity.dll
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\obj\Debug\net6.0\Eduverse.Backend.Entity.pdb
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\obj\Debug\net6.0\Eduverse.Backend.Entity.genruntimeconfig.cache
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Entity\obj\Debug\net6.0\ref\Eduverse.Backend.Entity.dll
