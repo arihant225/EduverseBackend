@@ -6,5 +6,6 @@
         public int successCode { get; set; }
         public int AuthenticateCode { get; set; }
         public bool isAuthenticate { get; set; }
+        public string? Message { set; get; }
     }
 }
