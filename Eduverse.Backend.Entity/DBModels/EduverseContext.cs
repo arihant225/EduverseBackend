@@ -15,6 +15,8 @@ public partial class EduverseContext : DbContext
     {
     }
 
+    public virtual DbSet<Credential> Credentials { get; set; }
+
     public virtual DbSet<SmtpMailCredential> SmtpMailCredentials { get; set; }
 
     public virtual DbSet<TempOtp> TempOtps { get; set; }
@@ -25,13 +27,44 @@ public partial class EduverseContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Credential>(entity =>
+        {
+            entity.HasKey(e => e.EduverseId).HasName("PK__Credenti__EB5B5E1031435052");
+
+            entity.HasIndex(e => e.PhoneNumber, "UQ__Credenti__4849DA019DF8E935").IsUnique();
+
+            entity.HasIndex(e => e.EmailId, "UQ__Credenti__87355E73D3DD242A").IsUnique();
+
+            entity.Property(e => e.EduverseId)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.EmailId)
+                .HasMaxLength(300)
+                .IsUnicode(false)
+                .HasColumnName("emailId");
+            entity.Property(e => e.Name)
+                .HasMaxLength(300)
+                .IsUnicode(false)
+                .HasColumnName("NAME");
+            entity.Property(e => e.Password)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("password");
+            entity.Property(e => e.PhoneNumber)
+                .HasColumnType("decimal(10, 0)")
+                .HasColumnName("phoneNumber");
+            entity.Property(e => e.Role)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+        });
+
         modelBuilder.Entity<SmtpMailCredential>(entity =>
         {
-            entity.HasKey(e => e.SmtpMailCredentialsId).HasName("PK__smtpMail__ED725F10C0FDCDB2");
+            entity.HasKey(e => e.SmtpMailCredentialsId).HasName("PK__smtpMail__ED725F10707AC2EF");
 
             entity.ToTable("smtpMailCredentials");
 
-            entity.HasIndex(e => e.Role, "UQ__smtpMail__863D21486DCCE4D7").IsUnique();
+            entity.HasIndex(e => e.Role, "UQ_Role").IsUnique();
 
             entity.Property(e => e.SmtpMailCredentialsId).HasColumnName("smtpMailCredentialsId");
             entity.Property(e => e.EmailId)
@@ -55,9 +88,9 @@ public partial class EduverseContext : DbContext
 
         modelBuilder.Entity<TempOtp>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Temp_Otp__3214EC07DF7CA07C");
+            entity.HasKey(e => e.Id).HasName("PK__Temp_OTP__3214EC0794B8C1E1");
 
-            entity.ToTable("Temp_Otps");
+            entity.ToTable("Temp_OTPs");
 
             entity.Property(e => e.Id)
                 .HasMaxLength(100)
@@ -68,6 +101,7 @@ public partial class EduverseContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.Otp).HasColumnType("decimal(6, 0)");
         });
+        modelBuilder.HasSequence("eduverseKey").StartsAt(1000L);
 
         OnModelCreatingPartial(modelBuilder);
     }

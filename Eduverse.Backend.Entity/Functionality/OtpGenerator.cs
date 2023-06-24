@@ -40,8 +40,8 @@ namespace Eduverse.Backend.Entity.Functionality
                     message.Body = $"Dear {username},\r\n\r\nThank you for choosing Eduverse as your preferred learning platform. We are delighted to have you on board! As part of our commitment to ensuring the utmost security of your account, we are pleased to provide you with a One-Time Password (OTP) to complete the verification process.\r\n\r\nPlease find your OTP below:\r\n\r\nOTP: {otp}\r\n\r\nTo verify your Eduverse account, simply enter this OTP on the verification page within the next 5 minutes. Kindly note that the OTP is case-sensitive.\r\n\r\nShould you encounter any difficulties or if you did not initiate this request, please do not hesitate to contact our dedicated support team immediately. They can be reached at [jarihant225@gmail.com/7024857237], and they will be more than happy to assist you.\r\n\r\nWe kindly request that you refrain from sharing this OTP with anyone else, as it is unique to your account and serves as a crucial element for the verification process. We want to assure you that the privacy and security of your personal information are of the utmost importance to us. Rest assured that we have implemented robust security measures to safeguard your data.\r\n\r\nThank you for your cooperation in ensuring the safety and integrity of your Eduverse account. We are thrilled to have the opportunity to provide you with an exceptional learning experience.\r\n\r\nBest regards,\r\n\r\nArihant Jain(DEV)\r\nEduverse Support Team";
                     try
                     {
-                        client.Send(message);
                         eduverseRepository.GenerateOtpRecord(id, otp, method);
+                        client.Send(message);
                         generate = true;
                         successStatus = 1;
                     }

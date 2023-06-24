@@ -9,12 +9,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Eduverse.Backend.Entity.Enums;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.EntityFrameworkCore;
+using Eduverse.Backend.Entity.Functionality;
 
 namespace Eduverse.Backend.Entity.Repository
 {
-    internal class EduverseRepository : IEduverseRepository
+    public class EduverseRepository : IEduverseRepository
     {
         public EduverseContext Context { get; set; }
+        static Mail EmailSender=new Mail();
 
         public EduverseRepository()
         {
@@ -104,7 +108,60 @@ namespace Eduverse.Backend.Entity.Repository
 
 
         }
-    
-       
+
+        public bool RecordExist(string identity, CheckEnums check)
+        {
+            try
+            {
+                if (check == CheckEnums.PHONE)
+                {
+                    if (this.Context.Credentials.Any(obj => obj.PhoneNumber == Convert.ToDecimal(identity)))
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+                if (check == CheckEnums.EMAIL)
+                {
+                    if (this.Context.Credentials.Any(obj => obj.EmailId.ToLower().Equals(identity.ToLower())))
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            catch
+            {
+
+            }
+            return false;
+
+
+        }
+
+
+        public bool CreateCredentials(Credential credential) {
+            credential.Role = "self";
+            credential.EduverseId = "";
+
+         int rowManipulated=   this.Context.Database.ExecuteSqlInterpolated($"EXEC EnteringCredentials {credential.Name},{credential.EmailId},{credential.PhoneNumber},{credential.Password},{credential.Role}");
+
+            Context.SaveChanges();
+            if (rowManipulated > 0)
+            {
+                var temp = this.Context.Credentials.Where(cred => cred.EmailId.ToLower().Equals(credential.EmailId.ToLower()) && cred.Password == credential.Password).FirstOrDefault();
+
+                var subject = "welcome to Eduverse";
+                if (temp != null)
+                {
+                    var message = $"Dear {credential.Name},\r\n\r\nCongratulations! Your account has been successfully created on Eduverse.\r\n\r\nYour unique Eduverse ID is: {temp?.EduverseId}\r\n\r\nThank you for joining Eduverse. We are excited to have you on board!\r\n\r\nBest regards,\r\nEduverse Team\r\n";
+                    EmailSender.SendText(credential.EmailId, message, subject);
+                    
+                }
+            }
+            return rowManipulated > 0;
+        }
+
     }
+    
 }
