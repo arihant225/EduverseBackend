@@ -1,4 +1,5 @@
 ﻿using Eduverse.Backend.WebApi.Models.Request;
+using Eduverse.Backend.WebApi.Models.Response;
 using Eduverse.Backend.WebApi.Services.Interface;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +21,7 @@ namespace Eduverse.Backend.WebApi.Controllers
         [AllowAnonymous]
         [HttpPost]
         public IActionResult Authenticate(Login login) {
-            string? token=this.loginService.GenerateToken(login);
+            Token? token=this.loginService.GenerateToken(login);
             if (token != null)
             {
                 return StatusCode(200, token);

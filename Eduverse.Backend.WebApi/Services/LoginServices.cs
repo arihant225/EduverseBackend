@@ -1,6 +1,7 @@
 ﻿using Eduverse.Backend.Entity.DBModels;
 using Eduverse.Backend.Entity.Repository;
 using Eduverse.Backend.WebApi.Models.Request;
+using Eduverse.Backend.WebApi.Models.Response;
 using Eduverse.Backend.WebApi.Services.Interface;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
@@ -19,17 +20,17 @@ namespace Eduverse.Backend.WebApi.Services
             this.Repository = repository;
             
         }
-        public string? GenerateToken(Login login)
+        public Token? GenerateToken(Login login)
         {
             Credential? cred = this.Repository.getCredentials(login.UserId, login.Password);
             if (cred != null)
             {
                 Claim[] claims = new[]
                 {
-            new Claim(ClaimTypes.Name, cred.Name),
-            new Claim(ClaimTypes.Email, cred.EmailId),
-            new Claim("Phone", cred.PhoneNumber.ToString()),
-            new Claim(ClaimTypes.Role, ""+cred.Role)
+            new Claim("userName", cred.Name),
+            new Claim("email", cred.EmailId),
+            new Claim("phone", cred.PhoneNumber.ToString()),
+            new Claim("role", ""+cred.Role)
         };
 
                 var secretKey = this.configuration["JWT:Secret"];
@@ -38,7 +39,16 @@ namespace Eduverse.Backend.WebApi.Services
                 var audience = this.configuration["JWT:Audience"];
                 var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
                 var token = new JwtSecurityToken(claims: claims, issuer: issuer, expires: DateTime.Now.AddMinutes(30), signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256), audience: audience);
-                return new JwtSecurityTokenHandler().WriteToken(token);
+
+                return new Token()
+                {
+                    username = cred.Name,
+                    expiration = DateTime.Now.AddMinutes(30),
+                    Email = cred.EmailId,
+                    JWTToken = new JwtSecurityTokenHandler().WriteToken(token)
+                };
+
+            
             }
             else
             {
