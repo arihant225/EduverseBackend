@@ -9,21 +9,23 @@ using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using Eduverse.Backend.Entity.Repository;
 using Eduverse.Backend.WebApi.Models.Request;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Eduverse.Backend.WebApi.Controllers
 {
     [ApiController]
     [Route("/api/[controller]/[action]")]
+    [AllowAnonymous]
     public class SignupController : Controller
     {
-        IEduverseRepository repo;
+      readonly  IEduverseRepository repo;
         public SignupController(IEduverseRepository repo)
         {
             this.repo = repo;
             
         }
         [HttpPost]
-        public IActionResult generateOtpForMail(RequestModel.Otp otp) {
+        public IActionResult GenerateOtpForMail(RequestModel.Otp otp) {
             try
             {
                 if (otp == null)
@@ -72,7 +74,7 @@ namespace Eduverse.Backend.WebApi.Controllers
 
 
         [HttpPost]
-        public IActionResult verifyOtpForMail(RequestModel.Otp otp) {
+        public IActionResult VerifyOtpForMail(RequestModel.Otp otp) {
             try
             {
                 if (otp == null)
@@ -85,12 +87,14 @@ namespace Eduverse.Backend.WebApi.Controllers
                     OtpEnums message;
                     OtpGenerator otpGenerator = new();
                     bool status = otpGenerator.VerifyOtp(otp.Id, otp.RequestedOtp.GetValueOrDefault(), otp.Time.GetValueOrDefault(), out message);
-                    ResponseModel.Otp responseOtp = new();
-                    responseOtp.isAuthenticate = status;
-                    responseOtp.successCode = 0;
-                    responseOtp.Message = message.ToString();
-                    responseOtp.AuthenticateCode = 0;
-                    responseOtp.IsGenerate = false;
+                    ResponseModel.Otp responseOtp = new()
+                    {
+                        isAuthenticate = status,
+                        successCode = 0,
+                        Message = message.ToString(),
+                        AuthenticateCode = 0,
+                        IsGenerate = false
+                    };
                     return StatusCode(200, responseOtp);
                 }
             } 
@@ -99,6 +103,8 @@ namespace Eduverse.Backend.WebApi.Controllers
             }
 
         }
+
+        [HttpGet]
         public IActionResult CanAccountCreateWithMobile(string identity)
         {
             try
@@ -112,7 +118,8 @@ namespace Eduverse.Backend.WebApi.Controllers
 
         }
 
-        public IActionResult canAccountCreateWithEmail(string identity)
+        [HttpGet]
+        public IActionResult CanAccountCreateWithEmail(string identity)
         {
             try
             {
@@ -125,7 +132,7 @@ namespace Eduverse.Backend.WebApi.Controllers
             
         }
         [HttpPost]
-        public IActionResult createCredentials(RequestModel.Credentials credential)
+        public IActionResult CreateCredentials(RequestModel.Credentials credential)
         {
             try
             {

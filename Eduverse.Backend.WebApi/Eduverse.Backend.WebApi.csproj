@@ -7,12 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.8" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.31.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Eduverse.Backend.Entity\Eduverse.Backend.Entity.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Controllers\ValuesController.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
   </ItemGroup>
 
 </Project>

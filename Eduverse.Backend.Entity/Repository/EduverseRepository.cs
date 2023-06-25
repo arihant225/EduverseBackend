@@ -12,6 +12,7 @@ using Eduverse.Backend.Entity.Enums;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.EntityFrameworkCore;
 using Eduverse.Backend.Entity.Functionality;
+using System.Net;
 
 namespace Eduverse.Backend.Entity.Repository
 {
@@ -107,6 +108,38 @@ namespace Eduverse.Backend.Entity.Repository
             }
 
 
+        }
+
+        public Credential? getCredentials(string id,string password) {
+            List<DBModels.Credential> credentials = new();
+            string authenticationType= "";
+            if (id.Length == 10)
+            { 
+            authenticationType = "phone";
+            }
+            if (id.Contains("@"))
+            { 
+            authenticationType= "email";
+            }
+            
+            try {
+
+                if (authenticationType == "email") {
+                    credentials = this.Context.Credentials.Where(cred => cred.EmailId.ToLower().Equals(id.ToLower())&&cred.Password==password).ToList();
+                }
+                else if(authenticationType=="phone") {
+                    credentials = this.Context.Credentials.Where(cred => cred.PhoneNumber==Convert.ToInt64(id)&&cred.Password==password).ToList();
+                }
+            }
+            catch { }
+            if (credentials.Count == 1)
+            {
+                return credentials.FirstOrDefault();
+            }
+            else
+                return null;
+            
+        
         }
 
         public bool RecordExist(string identity, CheckEnums check)

@@ -16,5 +16,7 @@ namespace Eduverse.Backend.Entity.Repository
         public bool CheckOtp(string id, int otp, DateTime requestedTime, out OtpEnums message);
         public bool RecordExist(string identity, CheckEnums check);
         public bool CreateCredentials(Credential credential);
+        public Credential? getCredentials(string id, string password);
     }
+
 }
