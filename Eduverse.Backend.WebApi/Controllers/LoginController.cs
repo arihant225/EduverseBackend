@@ -37,7 +37,7 @@ namespace Eduverse.Backend.WebApi.Controllers
 
         [HttpGet]
         [Authorize]
-        public IActionResult IsAuthorized() {
+        public IActionResult IsAuthenticate() {
             return StatusCode(200,true);
 
         }
