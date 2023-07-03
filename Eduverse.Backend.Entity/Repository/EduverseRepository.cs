@@ -125,10 +125,10 @@ namespace Eduverse.Backend.Entity.Repository
             try {
 
                 if (authenticationType == "email") {
-                    credentials = this.Context.Credentials.Where(cred => cred.EmailId.ToLower().Equals(id.ToLower())&&cred.Password==password).ToList();
+                    credentials = this.Context.Credentials.Where(cred => cred.EmailId.ToLower().Equals(id.ToLower())&&cred.Password==password).Include(obj=>obj.EduverseRoles).ToList();
                 }
                 else if(authenticationType=="phone") {
-                    credentials = this.Context.Credentials.Where(cred => cred.PhoneNumber==Convert.ToInt64(id)&&cred.Password==password).ToList();
+                    credentials = this.Context.Credentials.Where(cred => cred.PhoneNumber==Convert.ToInt64(id)&&cred.Password==password).Include(obj=>obj.EduverseRoles).ToList();
                 }
             }
             catch { }
@@ -171,6 +171,7 @@ namespace Eduverse.Backend.Entity.Repository
 
 
         }
+
 
 
         public bool CreateCredentials(Credential credential) {

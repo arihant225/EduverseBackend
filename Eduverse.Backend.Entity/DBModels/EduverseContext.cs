@@ -17,23 +17,24 @@ public partial class EduverseContext : DbContext
 
     public virtual DbSet<Credential> Credentials { get; set; }
 
+    public virtual DbSet<EduverseRoles> EduverseRoles { get; set; }
+
     public virtual DbSet<SmtpMailCredential> SmtpMailCredentials { get; set; }
 
     public virtual DbSet<TempOtp> TempOtps { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("data source=areyhant;initial catalog=Eduverse;integrated security=true;trustservercertificate=false;trusted_connection=true;encrypt=false;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Credential>(entity =>
         {
-            entity.HasKey(e => e.EduverseId).HasName("PK__Credenti__EB5B5E1031435052");
+            entity.HasKey(e => e.EduverseId).HasName("PK__Credenti__EB5B5E10461B2CB2");
 
-            entity.HasIndex(e => e.PhoneNumber, "UQ__Credenti__4849DA019DF8E935").IsUnique();
+            entity.HasIndex(e => e.PhoneNumber, "UQ__Credenti__4849DA01609DA727").IsUnique();
 
-            entity.HasIndex(e => e.EmailId, "UQ__Credenti__87355E73D3DD242A").IsUnique();
+            entity.HasIndex(e => e.EmailId, "UQ__Credenti__87355E7311327AC3").IsUnique();
 
             entity.Property(e => e.EduverseId)
                 .HasMaxLength(50)
@@ -58,9 +59,30 @@ public partial class EduverseContext : DbContext
                 .IsUnicode(false);
         });
 
+        modelBuilder.Entity<EduverseRoles>(entity =>
+        {
+            entity.HasKey(e => e.EduverseRoleId).HasName("PK__Eduverse__7B5D9970125F91EA");
+
+            entity.HasIndex(e => new { e.EduverseRole, e.EduverseId }, "UNIQUE_EDUVERSEROLE_CREDENTIALS").IsUnique();
+
+            entity.Property(e => e.EduverseId)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("EduverseID");
+            entity.Property(e => e.EduverseRole)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("EduverseRole");
+
+            entity.HasOne(d => d.Eduverse).WithMany(p => p.EduverseRoles)
+                .HasForeignKey(d => d.EduverseId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("NN_FK_CREDERNTIALROLES_CREDENTIALS");
+        });
+
         modelBuilder.Entity<SmtpMailCredential>(entity =>
         {
-            entity.HasKey(e => e.SmtpMailCredentialsId).HasName("PK__smtpMail__ED725F10707AC2EF");
+            entity.HasKey(e => e.SmtpMailCredentialsId).HasName("PK__smtpMail__ED725F1085A67F84");
 
             entity.ToTable("smtpMailCredentials");
 
@@ -88,7 +110,7 @@ public partial class EduverseContext : DbContext
 
         modelBuilder.Entity<TempOtp>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Temp_OTP__3214EC0794B8C1E1");
+            entity.HasKey(e => e.Id).HasName("PK__Temp_OTP__3214EC07E510BA4F");
 
             entity.ToTable("Temp_OTPs");
 

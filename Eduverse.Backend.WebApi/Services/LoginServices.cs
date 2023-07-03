@@ -3,6 +3,7 @@ using Eduverse.Backend.Entity.Repository;
 using Eduverse.Backend.WebApi.Models.Request;
 using Eduverse.Backend.WebApi.Models.Response;
 using Eduverse.Backend.WebApi.Services.Interface;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
@@ -29,16 +30,22 @@ namespace Eduverse.Backend.WebApi.Services
                 {
             new Claim("userName", cred.Name),
             new Claim("email", cred.EmailId),
-            new Claim("phone", cred.PhoneNumber.ToString()),
-            new Claim("role", ""+cred.Role)
+            new Claim("phone", cred.PhoneNumber.ToString())
         };
+                List<Claim> claimsOfanUser= new List<Claim>();
+                cred.EduverseRoles.ToList().ForEach(claim =>
+                {
+                    claimsOfanUser.Add(new Claim(ClaimTypes.Role, claim.EduverseRole));
+                });
+                claimsOfanUser.AddRange(claims);
+
 
                 var secretKey = this.configuration["JWT:Secret"];
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
                 var issuer = this.configuration["JWT:Issuer"];
                 var audience = this.configuration["JWT:Audience"];
                 var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                var token = new JwtSecurityToken(claims: claims, issuer: issuer, expires: DateTime.Now.AddMinutes(30), signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256), audience: audience);
+                var token = new JwtSecurityToken(claims: claimsOfanUser, issuer: issuer, expires: DateTime.Now.AddHours(3), signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256), audience: audience);
 
                 return new Token()
                 {
