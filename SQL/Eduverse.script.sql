@@ -1,4 +1,5 @@
 -- Check if the database 'Eduverse' exists and drop it if it does
+USE MASTER
 IF EXISTS (SELECT 1 FROM sys.databases WHERE [name] = 'Eduverse')
 BEGIN
     DROP DATABASE Eduverse;
@@ -81,6 +82,54 @@ GO
 -- Create the 'EnteringCredentials' procedure
 IF EXISTS(SELECT 1 FROM SYS.procedures WHERE name = 'EnteringCredentials')
 DROP PROCEDURE EnteringCredentials
+
+--connection String
+--scaffold-dbcontext "data source=areyhant;initial catalog=Eduverse;integrated security=true;trustservercertificate=false;trusted_connection=true;encrypt=false;" "Microsoft.EntityFrameworkCore.SqlServer" -outputDir "DBModels" -force
+
+
+
+IF  EXISTS(SELECT 1 FROM Sys.objects WHERE name = 'EduverseRoles')
+DROP TABLE EDUVERSEROLES
+
+IF NOT EXISTS(SELECT 1 FROM Sys.objects WHERE name = 'EduverseRoles')
+BEGIN
+CREATE TABLE EduverseRoles(
+EduverseRoleId BIGINT IDENTITY(1,1) PRIMARY KEY,
+EduverseID VARCHAR(50) NOT NULL CONSTRAINT NN_FK_CREDERNTIALROLES_CREDENTIALS REFERENCES Credentials(EduverseId),
+EduverseRole VARCHAR(50) NOT NULL,
+constraint UNIQUE_EDUVERSEROLE_CREDENTIALS UNIQUE(EduverseRole,EduverseID) 
+
+)
+END
+
+GO
+
+
+IF EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE NAME='AssignRole') 
+DROP PROCEDURE AssignRole
+GO
+CREATE PROCEDURE AssignRole 
+@EduverseId varchar(100)
+AS
+BEGIN 
+DECLARE @ROLE VARCHAR(50);
+SELECT @ROLE =[ROLE] FROM  Credentials WHERE EduverseID=@EduverseID
+IF(LOWER(@ROLE)='admin')
+BEGIN
+INSERT INTO EduverseRoles values(@EduverseId,'ADMIN'),
+(@EduverseId,'INSTITUTE'),(@EduverseId,'SELF')
+END 
+ELSE IF(LOWER(@ROLE)='institute')
+BEGIN
+INSERT INTO EduverseRoles VALUES
+(@EduverseId,'INSTITUTE'),(@EduverseId,'SELF')
+END 
+ELSE IF(LOWER(@ROLE)='self')
+BEGIN
+INSERT INTO EduverseRoles VALUES
+(@EduverseId,'SELF')
+END 
+END
 GO
 
 CREATE PROCEDURE EnteringCredentials
@@ -106,11 +155,28 @@ BEGIN
     INSERT INTO Credentials
     VALUES ('EDUVERSE_INST_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, @ROLE);
 	END
+
+	IF EXISTS (SELECT 1 FROM Credentials WHERE phoneNumber=@PHONENO AND EMAILID=@EMAIL)
+	BEGIN
+	DECLARE @EDUVERSEID VARCHAR(50) ;
+	SELECT @EDUVERSEID=EduverseID FROM Credentials WHERE phoneNumber=@PHONENO AND EMAILID=@EMAIL
+	EXEC ASSIGNROLE @EDUVERSEID
+	END
 END;
-
---connection String
---scaffold-dbcontext "data source=areyhant;initial catalog=Eduverse;integrated security=true;trustservercertificate=false;trusted_connection=true;encrypt=false;" "Microsoft.EntityFrameworkCore.SqlServer" -outputDir "DBModels" -force
+GO
 
 
-INSERT INTO  Credentials  values('EDU_ADM_70248','Arihant Jain','eduverse11802@gmail.com',714906403,'Akansha@1802','ADMIN') 
+INSERT INTO  Credentials  values('EDU_ADM_70248','Arihant Jain','eduverse1802@gmail.com',7649006403,'Akansha@1802','ADMIN') 
 SELECT * FROM Credentials
+GO
+
+
+BEGIN
+
+	DECLARE @EDUVERSEADMINID VARCHAR(50)
+	SELECT @EDUVERSEADMINID=EduverseID FROM Credentials WHERE phoneNumber=7649006403 AND EMAILID='eduverse1802@gmail.com'
+	PRINT @EDUVERSEADMINID
+	EXEC AssignRole @EDUVERSEADMINID
+
+	select * from EduverseRoles
+END
