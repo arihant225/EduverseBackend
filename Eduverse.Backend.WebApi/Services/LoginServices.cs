@@ -35,7 +35,7 @@ namespace Eduverse.Backend.WebApi.Services
                 List<Claim> claimsOfanUser= new List<Claim>();
                 cred.EduverseRoles.ToList().ForEach(claim =>
                 {
-                    claimsOfanUser.Add(new Claim(ClaimTypes.Role, claim.EduverseRole));
+                    claimsOfanUser.Add(new Claim(ClaimTypes.Role, claim.Role));
                 });
                 claimsOfanUser.AddRange(claims);
 

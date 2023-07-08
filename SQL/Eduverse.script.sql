@@ -1,10 +1,12 @@
 -- Check if the database 'Eduverse' exists and drop it if it does
 USE MASTER
+GO
+
 IF EXISTS (SELECT 1 FROM sys.databases WHERE [name] = 'Eduverse')
 BEGIN
     DROP DATABASE Eduverse;
 END
-
+GO
 -- Create the database 'Eduverse'
 CREATE DATABASE Eduverse;
 GO
@@ -61,7 +63,7 @@ CREATE TABLE Credentials (
     emailId VARCHAR(300) NOT NULL UNIQUE,
     phoneNumber DECIMAL(10, 0) NOT NULL UNIQUE,
     [password] VARCHAR(100) NOT NULL,
-    [Role] VARCHAR(50) CHECK (Lower([Role]) IN ('admin', 'institute', 'self')),
+    [Role] VARCHAR(50) CHECK (UPPER([Role]) IN ('ADMIN', 'STREAMER', 'SELF')),
     CONSTRAINT CHK_Role CHECK (LEN([Role]) > 0),
     CONSTRAINT CHK_Email CHECK (emailId LIKE '%_@__%.%'),
     CONSTRAINT CHK_Password CHECK ([password] LIKE '%[A-Za-z0-9]%[!@#$%^&*()]%')
@@ -94,10 +96,10 @@ DROP TABLE EDUVERSEROLES
 IF NOT EXISTS(SELECT 1 FROM Sys.objects WHERE name = 'EduverseRoles')
 BEGIN
 CREATE TABLE EduverseRoles(
-EduverseRoleId BIGINT IDENTITY(1,1) PRIMARY KEY,
+[RoleId] BIGINT IDENTITY(1,1) PRIMARY KEY,
 EduverseID VARCHAR(50) NOT NULL CONSTRAINT NN_FK_CREDERNTIALROLES_CREDENTIALS REFERENCES Credentials(EduverseId),
-EduverseRole VARCHAR(50) NOT NULL,
-constraint UNIQUE_EDUVERSEROLE_CREDENTIALS UNIQUE(EduverseRole,EduverseID) 
+[Role] VARCHAR(50) NOT NULL,
+constraint UNIQUE_EDUVERSEROLE_CREDENTIALS UNIQUE([Role],EduverseID) 
 
 )
 END
@@ -114,17 +116,17 @@ AS
 BEGIN 
 DECLARE @ROLE VARCHAR(50);
 SELECT @ROLE =[ROLE] FROM  Credentials WHERE EduverseID=@EduverseID
-IF(LOWER(@ROLE)='admin')
+IF(UPPER(@ROLE)='ADMIN')
 BEGIN
 INSERT INTO EduverseRoles values(@EduverseId,'ADMIN'),
-(@EduverseId,'INSTITUTE'),(@EduverseId,'SELF')
+(@EduverseId,'STREAMER'),(@EduverseId,'SELF')
 END 
-ELSE IF(LOWER(@ROLE)='institute')
+ELSE IF(UPPER(@ROLE)='STREAMER')
 BEGIN
 INSERT INTO EduverseRoles VALUES
-(@EduverseId,'INSTITUTE'),(@EduverseId,'SELF')
+(@EduverseId,'STREAMER'),(@EduverseId,'SELF')
 END 
-ELSE IF(LOWER(@ROLE)='self')
+ELSE IF(UPPER(@ROLE)='SELF')
 BEGIN
 INSERT INTO EduverseRoles VALUES
 (@EduverseId,'SELF')
@@ -141,19 +143,19 @@ CREATE PROCEDURE EnteringCredentials
 AS
 BEGIN
 
-    IF EXISTS (SELECT 1 FROM Credentials WHERE LOWER(emailId)=LOWER(@EMAIL) OR LOWER(@PHONENO)=LOWER(phoneNumber))
+    IF EXISTS (SELECT 1 FROM Credentials WHERE UPPER(emailId)=UPPER(@EMAIL) OR UPPER(@PHONENO)=UPPER(phoneNumber))
 	BEGIN 
 	RETURN -1;
 	END
-	IF(LOWER(@role)<>'admin' AND LOWER(@ROLE)='self')
+	IF(UPPER(@role)<>'ADMIN' AND UPPER(@ROLE)='SELF')
 	BEGIN
     INSERT INTO Credentials
-    VALUES ('EDUVERSE_STU_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, @ROLE);
+    VALUES ('EDUVERSE_STU_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'SELF');
 	END
-	IF(LOWER(@role)<>'admin' AND LOWER(@ROLE)='institute')
+	IF(UPPER(@role)<>'ADMIN' AND UPPER(@ROLE)='STREAMER')
 	BEGIN
     INSERT INTO Credentials
-    VALUES ('EDUVERSE_INST_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, @ROLE);
+    VALUES ('EDUVERSE_INST_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'STREAMER');
 	END
 
 	IF EXISTS (SELECT 1 FROM Credentials WHERE phoneNumber=@PHONENO AND EMAILID=@EMAIL)
@@ -162,14 +164,17 @@ BEGIN
 	SELECT @EDUVERSEID=EduverseID FROM Credentials WHERE phoneNumber=@PHONENO AND EMAILID=@EMAIL
 	EXEC ASSIGNROLE @EDUVERSEID
 	END
-END;
+END
+
 GO
+
+
+
 
 
 INSERT INTO  Credentials  values('EDU_ADM_70248','Arihant Jain','eduverse1802@gmail.com',7649006403,'Akansha@1802','ADMIN') 
 SELECT * FROM Credentials
 GO
-
 
 BEGIN
 
@@ -178,5 +183,20 @@ BEGIN
 	PRINT @EDUVERSEADMINID
 	EXEC AssignRole @EDUVERSEADMINID
 
-	select * from EduverseRoles
+	
 END
+
+
+
+IF EXISTS(SELECT * FROM sys.tables where [name]='Institute' )
+DROP TABLE Institute
+GO
+
+CREATE TABLE STREAMER(
+STREAMERId BIGINT IDENTITY , EduverseId VARCHAR(50) NOT NULL CONSTRAINT FK_CREDENTIALS_STREAMER UNIQUE REFERENCES CREDENTIALS([eduverseId]),
+STREAMERName VARCHAR(100) NOT NULL,STREAMERType VARCHAR(50) NOT NULL,[Private] TINYINT CONSTRAINT SCOPE_STREAMER_CHECK CHECK([Private] IN (1,2)),
+[image] varbinary(max) , STREAMERDescription varchar(200) 
+
+)  
+
+

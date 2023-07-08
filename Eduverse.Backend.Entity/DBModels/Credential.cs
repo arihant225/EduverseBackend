@@ -17,5 +17,5 @@ public partial class Credential
 
     public string? Role { get; set; }
 
-    public virtual ICollection<EduverseRoles> EduverseRoles { get; set; } = new List<EduverseRoles>();
+    public virtual ICollection<EduverseRole> EduverseRoles { get; set; } = new List<EduverseRole>();
 }
