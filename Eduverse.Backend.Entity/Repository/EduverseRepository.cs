@@ -13,6 +13,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.EntityFrameworkCore;
 using Eduverse.Backend.Entity.Functionality;
 using System.Net;
+using Stream = Eduverse.Backend.Entity.DBModels.Stream;
 
 namespace Eduverse.Backend.Entity.Repository
 {
@@ -194,6 +195,18 @@ namespace Eduverse.Backend.Entity.Repository
                 }
             }
             return rowManipulated > 0;
+        }
+
+
+        public  List<Stream>? EduverseStreams() {
+            try
+            {
+                return  this.Context.Streams.Where(obj => obj.Public != 0).ToList();
+            }
+            catch(Exception e) {
+                return null;
+            }
+           
         }
 
     }

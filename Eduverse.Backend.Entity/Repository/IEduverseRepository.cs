@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Stream = Eduverse.Backend.Entity.DBModels.Stream;
 
 namespace Eduverse.Backend.Entity.Repository
 {
@@ -17,6 +18,7 @@ namespace Eduverse.Backend.Entity.Repository
         public bool RecordExist(string identity, CheckEnums check);
         public bool CreateCredentials(Credential credential);
         public Credential? getCredentials(string id, string password);
+        public List<Stream>? EduverseStreams();
     }
 
 }
