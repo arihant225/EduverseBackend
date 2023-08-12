@@ -10,6 +10,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IEduverseRepository, EduverseRepository>();
 builder.Services.AddScoped<ILoginService, LoginServices>();
+builder.Services.AddScoped<INotesService, NoteService>();
 // Add services to the container.
 
 builder.Services.AddAuthentication(options =>

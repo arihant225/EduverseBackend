@@ -482,4 +482,8 @@ VALUES
   ('EDU_ADM_70248', 'Science Experiments', 4, 1, NULL, 'Streaming exciting science experiments and demonstrations.', 1, 24.99);
 
 
-  select * from Credentials
+  IF EXISTS(SELECT * FROM sys.tables where [name]='Notes' )
+DROP TABLE Notes
+GO
+create Table Notes(notesId bigint identity(1,1) primary key, title varchar(max),body varchar(max), titleStyle varchar(max),bodyStyle varchar(max),userId VARCHAR(50) references credentials(eduverseId) ,isPrivate bit)
+select * from Notes

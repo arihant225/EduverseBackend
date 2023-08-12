@@ -23,6 +23,8 @@ public partial class EduverseContext : DbContext
 
     public virtual DbSet<Genre> Genres { get; set; }
 
+    public virtual DbSet<Note> Notes { get; set; }
+
     public virtual DbSet<SmtpMailCredential> SmtpMailCredentials { get; set; }
 
     public virtual DbSet<Stream> Streams { get; set; }
@@ -112,6 +114,34 @@ public partial class EduverseContext : DbContext
             entity.Property(e => e.GenreName)
                 .HasMaxLength(255)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<Note>(entity =>
+        {
+            entity.HasKey(e => e.NotesId).HasName("PK__Notes__CFE31686F879709A");
+
+            entity.Property(e => e.NotesId).HasColumnName("notesId");
+            entity.Property(e => e.Body)
+                .IsUnicode(false)
+                .HasColumnName("body");
+            entity.Property(e => e.BodyStyle)
+                .IsUnicode(false)
+                .HasColumnName("bodyStyle");
+            entity.Property(e => e.IsPrivate).HasColumnName("isPrivate");
+            entity.Property(e => e.Title)
+                .IsUnicode(false)
+                .HasColumnName("title");
+            entity.Property(e => e.TitleStyle)
+                .IsUnicode(false)
+                .HasColumnName("titleStyle");
+            entity.Property(e => e.UserId)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("userId");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Notes)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK__Notes__userId__07C12930");
         });
 
         modelBuilder.Entity<SmtpMailCredential>(entity =>

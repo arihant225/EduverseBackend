@@ -19,6 +19,9 @@ namespace Eduverse.Backend.Entity.Repository
         public bool CreateCredentials(Credential credential);
         public Credential? getCredentials(string id, string password);
         public List<Stream>? EduverseStreams();
+        public Task<Note?> SaveNotes(string emailId, decimal phoneNumber, Note notes);
+        public  Task<Note?> GetNotes(long id, string userId);
+        public  Task<string?> userId(string id, decimal number);
     }
 
 }
