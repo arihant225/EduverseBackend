@@ -482,8 +482,21 @@ VALUES
   ('EDU_ADM_70248', 'Science Experiments', 4, 1, NULL, 'Streaming exciting science experiments and demonstrations.', 1, 24.99);
 
 
-  IF EXISTS(SELECT * FROM sys.tables where [name]='Notes' )
+IF EXISTS(SELECT * FROM sys.tables where [name]='Notes' )
 DROP TABLE Notes
 GO
 create Table Notes(notesId bigint identity(1,1) primary key, title varchar(max),body varchar(max), titleStyle varchar(max),bodyStyle varchar(max),userId VARCHAR(50) references credentials(eduverseId) ,isPrivate bit)
 select * from Notes
+
+
+IF EXISTS(SELECT * FROM sys.tables where [name]='Folders' )
+DROP TABLE Folders
+GO
+
+create table Folders(folderId int identity(1,1) primary key,folderName varchar(50) not null,userid varchar(50) references Credentials(EduverseId))
+
+IF EXISTS(SELECT * FROM sys.tables where [name]='SubItems' )
+DROP TABLE SubItems
+GO
+
+create table SubItems(itemId int identity(1,1) primary key,folderId int references Folders(folderId) ,NoteId bigint references Notes(notesId))

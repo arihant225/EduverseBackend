@@ -16,5 +16,7 @@
         public bool? isAuthorize { get; set; }
 
         public bool? IsPrivate { get; set; }
+        public int? ParentFolderId { get; set; }
+
     }
 }

@@ -21,6 +21,8 @@ public partial class EduverseContext : DbContext
 
     public virtual DbSet<FieldsOfStudy> FieldsOfStudies { get; set; }
 
+    public virtual DbSet<Folder> Folders { get; set; }
+
     public virtual DbSet<Genre> Genres { get; set; }
 
     public virtual DbSet<Note> Notes { get; set; }
@@ -28,6 +30,8 @@ public partial class EduverseContext : DbContext
     public virtual DbSet<SmtpMailCredential> SmtpMailCredentials { get; set; }
 
     public virtual DbSet<Stream> Streams { get; set; }
+
+    public virtual DbSet<SubItem> SubItems { get; set; }
 
     public virtual DbSet<Subgenre> Subgenres { get; set; }
 
@@ -104,6 +108,25 @@ public partial class EduverseContext : DbContext
                 .IsUnicode(false);
         });
 
+        modelBuilder.Entity<Folder>(entity =>
+        {
+            entity.HasKey(e => e.FolderId).HasName("PK__Folders__C2FABF939A9C7EE0");
+
+            entity.Property(e => e.FolderId).HasColumnName("folderId");
+            entity.Property(e => e.FolderName)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("folderName");
+            entity.Property(e => e.Userid)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("userid");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Folders)
+                .HasForeignKey(d => d.Userid)
+                .HasConstraintName("FK__Folders__userid__1332DBDC");
+        });
+
         modelBuilder.Entity<Genre>(entity =>
         {
             entity.HasKey(e => e.GenreId).HasName("PK__Genre__0385055E36180F7F");
@@ -118,7 +141,7 @@ public partial class EduverseContext : DbContext
 
         modelBuilder.Entity<Note>(entity =>
         {
-            entity.HasKey(e => e.NotesId).HasName("PK__Notes__CFE31686F879709A");
+            entity.HasKey(e => e.NotesId).HasName("PK__Notes__CFE3168621DF6C6D");
 
             entity.Property(e => e.NotesId).HasColumnName("notesId");
             entity.Property(e => e.Body)
@@ -141,7 +164,7 @@ public partial class EduverseContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Notes)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Notes__userId__07C12930");
+                .HasConstraintName("FK__Notes__userId__10566F31");
         });
 
         modelBuilder.Entity<SmtpMailCredential>(entity =>
@@ -201,6 +224,26 @@ public partial class EduverseContext : DbContext
                 .HasForeignKey(d => d.StreamerType)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Streams__Streame__5DCAEF64");
+        });
+
+        modelBuilder.Entity<SubItem>(entity =>
+        {
+            entity.HasKey(e => e.ItemId).HasName("PK__SubItems__56A128AAECC205DC");
+
+            entity.Property(e => e.ItemId).HasColumnName("itemId");
+            entity.Property(e => e.FolderId).HasColumnName("folderId");
+
+            entity.HasOne(d => d.Folder).WithMany(p => p.SubItemFolders)
+                .HasForeignKey(d => d.FolderId)
+                .HasConstraintName("FK__SubItems__folder__395884C4");
+
+            entity.HasOne(d => d.LinkedFolder).WithMany(p => p.SubItemLinkedFolders)
+                .HasForeignKey(d => d.LinkedFolderId)
+                .HasConstraintName("FK__SubItems__Linked__37703C52");
+
+            entity.HasOne(d => d.Note).WithMany(p => p.SubItems)
+                .HasForeignKey(d => d.NoteId)
+                .HasConstraintName("FK__SubItems__NoteId__3864608B");
         });
 
         modelBuilder.Entity<Subgenre>(entity =>

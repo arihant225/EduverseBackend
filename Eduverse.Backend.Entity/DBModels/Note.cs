@@ -19,5 +19,7 @@ public partial class Note
 
     public bool? IsPrivate { get; set; }
 
+    public virtual ICollection<SubItem> SubItems { get; set; } = new List<SubItem>();
+
     public virtual Credential? User { get; set; }
 }

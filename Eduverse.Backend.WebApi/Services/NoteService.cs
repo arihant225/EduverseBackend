@@ -49,7 +49,7 @@ namespace Eduverse.Backend.WebApi.Services
             Entity.Body = dto.Body;
             Entity.BodyStyle= dto.BodyStyle;    
             Entity.IsPrivate = dto.IsPrivate;
-            Entity=await this.eduverseRepository.SaveNotes(emailId,phoneNo,Entity);
+            Entity=await this.eduverseRepository.SaveNotes(emailId,phoneNo,Entity,dto.ParentFolderId);
             if(Entity!=null)
             dto.NotesId=Entity.NotesId ;
             if(Entity==null)

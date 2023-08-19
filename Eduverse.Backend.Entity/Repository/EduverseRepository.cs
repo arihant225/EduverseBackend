@@ -216,7 +216,7 @@ namespace Eduverse.Backend.Entity.Repository
             }
 
         }
-        public async Task<Note?> SaveNotes(string emailId, decimal phoneNumber, Note notes)
+        public async Task<Note?> SaveNotes(string emailId, decimal phoneNumber, Note notes,int?parentFolderId)
         {
             try
             {
@@ -242,6 +242,29 @@ namespace Eduverse.Backend.Entity.Repository
                         await this.Context.Notes.AddAsync(notes);
                     }
                     await this.Context.SaveChangesAsync();
+
+                    SubItem? linkedRecord = await this.Context.SubItems.Where(obj => obj.NoteId == notes.NotesId).FirstOrDefaultAsync();
+                    if (linkedRecord == null)
+                    {
+                     
+                            linkedRecord = new()
+                            {
+                                NoteId = notes.NotesId,
+                                LinkedFolderId = parentFolderId
+
+                            };
+                            if (linkedRecord != null)
+                            {
+                                this.Context.SubItems.Add(linkedRecord);
+                            }
+                        
+                    }
+                    else
+                    {
+                        linkedRecord.LinkedFolderId = parentFolderId;
+                        this.Context.SubItems.Update(linkedRecord);
+                    }
+                    await this.Context.SaveChangesAsync();
                     return notes;
 
                 }
@@ -254,6 +277,53 @@ namespace Eduverse.Backend.Entity.Repository
                 return null;
             }
         }
+
+
+
+        public async Task<Folder?> SaveFolder(Folder folder,string userId,int? parentFolderId) {
+            if (folder == null)
+                return null;
+            Folder? temp =await this.Context.Folders.Where(obj => obj.FolderId == folder.FolderId).FirstOrDefaultAsync();
+            if (temp != null)
+            {
+                
+                temp.FolderName = folder.FolderName;
+                this.Context.Folders.Update(temp);
+            }
+
+
+            else {
+                folder.Userid = userId;
+            this.Context.Folders.Add(folder);
+            }
+            await this.Context.SaveChangesAsync();
+         
+                SubItem? linkedRecord = await this.Context.SubItems.Where(obj => obj.LinkedFolderId == folder.FolderId).FirstOrDefaultAsync();
+            if (linkedRecord == null)
+            {
+               
+                    linkedRecord = new()
+                    {
+                        FolderId = folder.FolderId,
+                        LinkedFolderId = parentFolderId
+
+                    };
+                    if (linkedRecord != null)
+                    {
+                        this.Context.SubItems.Add(linkedRecord);
+                    }
+                
+            }
+            else
+            {
+                linkedRecord.LinkedFolderId = parentFolderId;
+                this.Context.SubItems.Update(linkedRecord);
+            }
+            await this.Context.SaveChangesAsync();
+            return folder;        
+        }
+
+        public async Task<List<SubItem>> GetSubItems(int? folderId) => await this.Context.SubItems.Where(obj => obj.LinkedFolderId == folderId).Include(obj=>obj.Note).Include(obj=>obj.Folder).ToListAsync();
 
         public async Task<Note?> GetNotes(long id, string userId) => await this.Context.Notes.Where(obj => obj.NotesId == id && obj.UserId == userId && obj.IsPrivate == true || obj.NotesId == id  && obj.IsPrivate != true).FirstOrDefaultAsync();
 
