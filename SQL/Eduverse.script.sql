@@ -50,24 +50,81 @@ CREATE TABLE Temp_OTPs (
     GeneratedTimeStamp DATE
 );
 
+IF EXISTS (SELECT 1 FROM sys.objects WHERE [object_id] = OBJECT_ID('[RegisterdInstitutes'))
+BEGIN
+    DROP TABLE [RegisterdInstitutes];
+END
+CREATE TABLE [dbo].[RegisterdInstitutes](
+	[institutitionalId] [int] IDENTITY(1,1) NOT NULL,
+	[instituteName] [varchar](300) NOT NULL,
+	[status] [varchar](300) NOT NULL,
+	[logo] [varchar](400) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[institutitionalId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
+
 -- Check if the 'Credentials' table exists and drop it if it does
 IF EXISTS (SELECT 1 FROM sys.objects WHERE [object_id] = OBJECT_ID('Credentials'))
 BEGIN
     DROP TABLE Credentials;
 END
 
--- Create the 'Credentials' table
-CREATE TABLE Credentials (
-    EduverseId VARCHAR(50) PRIMARY KEY,
-    NAME VARCHAR(300) NOT NULL,
-    emailId VARCHAR(300) NOT NULL UNIQUE,
-    phoneNumber DECIMAL(10, 0) NOT NULL UNIQUE,
-    [password] VARCHAR(100) NOT NULL,
-    [Role] VARCHAR(50) CHECK (UPPER([Role]) IN ('ADMIN', 'STREAMER', 'SELF')),
-    CONSTRAINT CHK_Role CHECK (LEN([Role]) > 0),
-    CONSTRAINT CHK_Email CHECK (emailId LIKE '%_@__%.%'),
-    CONSTRAINT CHK_Password CHECK ([password] LIKE '%[A-Za-z0-9]%[!@#$%^&*()]%')
-);
+
+
+CREATE TABLE [dbo].[Credentials](
+	[EduverseId] [varchar](50) NOT NULL,
+	[NAME] [varchar](300) NOT NULL,
+	[emailId] [varchar](300) NOT NULL,
+	[phoneNumber] [decimal](10, 0) NOT NULL,
+	[password] [varchar](100) NOT NULL,
+	[Role] [varchar](50) NULL,
+	[institutitionalId] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[EduverseId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[phoneNumber] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[emailId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Credentials]  WITH CHECK ADD FOREIGN KEY([institutitionalId])
+REFERENCES [dbo].[RegisterdInstitutes] ([institutitionalId])
+GO
+
+ALTER TABLE [dbo].[Credentials]  WITH CHECK ADD  CONSTRAINT [CHK_Email] CHECK  (([emailId] like '%_@__%.%'))
+GO
+
+ALTER TABLE [dbo].[Credentials] CHECK CONSTRAINT [CHK_Email]
+GO
+
+ALTER TABLE [dbo].[Credentials]  WITH CHECK ADD  CONSTRAINT [CHK_Password] CHECK  (([password] like '%[A-Za-z0-9]%[!@#$%^&*()]%'))
+GO
+
+ALTER TABLE [dbo].[Credentials] CHECK CONSTRAINT [CHK_Password]
+GO
+
+ALTER TABLE [dbo].[Credentials]  WITH CHECK ADD  CONSTRAINT [CHK_Role] CHECK  ((len([Role])>(0)))
+GO
+
+ALTER TABLE [dbo].[Credentials] CHECK CONSTRAINT [CHK_Role]
+GO
+
+ALTER TABLE [dbo].[Credentials]  WITH CHECK ADD CHECK  ((upper([Role])='EDU-AUTHOR' OR upper([Role])='USER' OR upper([Role])='ORGINISATION' OR upper([Role])='ADMIN'))
+GO
+
+
 
 
 IF EXISTS (SELECT 1 FROM sys.sequences WHERE name = 'eduverseKey')
@@ -81,9 +138,9 @@ NO CYCLE
 CACHE 50;
 GO
 
--- Create the 'EnteringCredentials' procedure
-IF EXISTS(SELECT 1 FROM SYS.procedures WHERE name = 'EnteringCredentials')
-DROP PROCEDURE EnteringCredentials
+-- Create the 'AddCredentials' procedure
+IF EXISTS(SELECT 1 FROM SYS.procedures WHERE name = 'AddCredentials')
+DROP PROCEDURE AddCredentials
 
 --connection String
 --scaffold-dbcontext "data source=areyhant;initial catalog=Eduverse;integrated security=true;trustservercertificate=false;trusted_connection=true;encrypt=false;" "Microsoft.EntityFrameworkCore.SqlServer" -outputDir "DBModels" -force
@@ -107,39 +164,45 @@ END
 GO
 
 
-IF EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE NAME='AssignRole') 
-DROP PROCEDURE AssignRole
-GO
-CREATE PROCEDURE AssignRole 
+
+
+CREATE OR ALTER PROCEDURE [dbo].[AssignRole] 
 @EduverseId varchar(100)
 AS
 BEGIN 
 DECLARE @ROLE VARCHAR(50);
 SELECT @ROLE =[ROLE] FROM  Credentials WHERE EduverseID=@EduverseID
+IF(UPPER(@ROLE)='EDU-AUTHOR')
+BEGIN
+INSERT INTO EduverseRoles values
+(@EduverseId,'EDU-AUTHOR')
+END
 IF(UPPER(@ROLE)='ADMIN')
 BEGIN
 INSERT INTO EduverseRoles values(@EduverseId,'ADMIN'),
-(@EduverseId,'STREAMER'),(@EduverseId,'SELF')
+(@EduverseId,'USER'),(@EduverseId,'ORGINISATION')
 END 
-ELSE IF(UPPER(@ROLE)='STREAMER')
+ELSE IF(UPPER(@ROLE)='ORGINISATION')
 BEGIN
 INSERT INTO EduverseRoles VALUES
-(@EduverseId,'STREAMER'),(@EduverseId,'SELF')
+(@EduverseId,'ORGINISATION'),(@EduverseId,'USER')
 END 
-ELSE IF(UPPER(@ROLE)='SELF')
+ELSE IF(UPPER(@ROLE)='USER')
 BEGIN
 INSERT INTO EduverseRoles VALUES
-(@EduverseId,'SELF')
+(@EduverseId,'USER')
 END 
 END
 GO
 
-CREATE PROCEDURE EnteringCredentials
+
+CREATE OR ALTER PROCEDURE [dbo].[AddCredentials]
     @NAME VARCHAR(100),
     @EMAIL VARCHAR(100),
     @PHONENO DECIMAL(10, 0),
     @PASSWORD VARCHAR(100),
-    @ROLE VARCHAR(100)
+    @ROLE VARCHAR(100),
+	@instituitionalId int=null
 AS
 BEGIN
 
@@ -147,15 +210,21 @@ BEGIN
 	BEGIN 
 	RETURN -1;
 	END
-	IF(UPPER(@role)<>'ADMIN' AND UPPER(@ROLE)='SELF')
+	
+	IF(UPPER(@role)='ADMIN' )
 	BEGIN
     INSERT INTO Credentials
-    VALUES ('EDUVERSE_STU_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'SELF');
+    VALUES ('EDUVERSE_ADM_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'ADMIN',@instituitionalId);
 	END
-	IF(UPPER(@role)<>'ADMIN' AND UPPER(@ROLE)='STREAMER')
+	ELSE IF(UPPER(@role)<>'ADMIN' AND UPPER(@ROLE)='USER')
 	BEGIN
     INSERT INTO Credentials
-    VALUES ('EDUVERSE_INST_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'STREAMER');
+    VALUES ('EDUVERSE_STU_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'USER',@instituitionalId);
+	END
+	IF(UPPER(@role)<>'ADMIN' AND UPPER(@ROLE)='ORGINISATION')
+	BEGIN
+    INSERT INTO Credentials
+    VALUES ('EDUVERSE_ORG_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'ORGINISATION',@instituitionalId);
 	END
 
 	IF EXISTS (SELECT 1 FROM Credentials WHERE phoneNumber=@PHONENO AND EMAILID=@EMAIL)
@@ -167,6 +236,8 @@ BEGIN
 END
 
 GO
+
+
 
 
 
@@ -215,7 +286,7 @@ CREATE TABLE Subgenre (
 -- Insert sample data into the Genre table
 INSERT INTO Genre (GenreName)
 VALUES
-  ('Academic Subjects'),
+  ('Academic Courses'),
   ('Skill Development'),
   ('Test Preparation'),
   ('Career Guidance'),
@@ -269,8 +340,8 @@ IF EXISTS(SELECT * FROM sys.tables where [name]='FieldsOfStudy' )
 DROP TABLE FieldsOfStudy
 GO
 
-IF EXISTS(SELECT * FROM sys.tables where [name]='Subjects' )
-DROP TABLE Subjects
+IF EXISTS(SELECT * FROM sys.tables where [name]='Courses' )
+DROP TABLE Courses
 GO
 
 
@@ -280,8 +351,8 @@ CREATE TABLE FieldsOfStudy (
   FieldName VARCHAR(255) NOT NULL
 );
 
--- Table: Subjects
-CREATE TABLE Subjects (
+-- Table: Courses
+CREATE TABLE Courses (
   SubjectID INT IDENTITY(1,1) PRIMARY KEY,
   SubjectName VARCHAR(255) NOT NULL,
   FieldID INT,
@@ -305,8 +376,8 @@ VALUES
 
 
 
--- Inserting sample data into Subjects table
-INSERT INTO Subjects (SubjectName, FieldID)
+-- Inserting sample data into Courses table
+INSERT INTO Courses (SubjectName, FieldID)
 VALUES
   -- Arts and Humanities
   ('English Literature', 1),
@@ -442,46 +513,6 @@ IF EXISTS(SELECT * FROM sys.tables where [name]='Streams' )
 DROP TABLE Streams
 GO
 
-
-CREATE TABLE Streams(
-StreamerId BIGINT IDENTITY , EduverseId VARCHAR(50) NOT NULL CONSTRAINT FK_CREDENTIALS_Streamer  REFERENCES CREDENTIALS([eduverseId]),
-StreamerName VARCHAR(100) NOT NULL,StreamerType int references Subgenre(SubgenreID) not null,[Public] TINYINT CONSTRAINT SCOPE_Streamer_CHECK CHECK([Public] IN (1,2)),
-[image] varbinary(max) , StreamerDescription varchar(200) ,
-paid tinyint  check( paid in (0,1)) not null , price money not null
-)  
-
--- Inserting sample data into Streams table
-INSERT INTO Streams (EduverseId, StreamerName, StreamerType, [Public], [image], StreamerDescription, paid, price)
-VALUES
-  -- Educational Courses
-  ('EDU_ADM_70248', 'MathMaster', 1, 1, NULL, 'Streaming expert-level math courses.', 1, 49.99),
-  ('EDU_ADM_70248', 'Language Learner', 1, 1, NULL, 'Streaming language learning courses.', 1, 29.99),
-  ('EDU_ADM_70248', 'Science Spectacle', 1, 1, NULL, 'Streaming captivating science courses.', 1, 39.99),
-  ('EDU_ADM_70248', 'History Haven', 1, 1, NULL, 'Streaming immersive history courses.', 1, 34.99),
-  ('EDU_ADM_70248', 'Art Appreciator', 1, 1, NULL, 'Streaming courses on art history and appreciation.', 1, 44.99),
-
-  -- Quizzes
-  ('EDU_ADM_70248', 'Brain Buster Quiz', 2, 1, NULL, 'Streaming challenging brain teaser quizzes.', 0, 0.00),
-  ('EDU_ADM_70248', 'Language Trivia', 2, 1, NULL, 'Streaming language trivia quizzes.', 0, 0.00),
-  ('EDU_ADM_70248', 'Science Quiz Mania', 2, 1, NULL, 'Streaming fun and educational science quizzes.', 1, 19.99),
-  ('EDU_ADM_70248', 'History Explorer', 2, 1, NULL, 'Streaming quizzes on historical events and figures.', 1, 24.99),
-  ('EDU_ADM_70248', 'Art Quiz Quest', 2, 1, NULL, 'Streaming quizzes to test your knowledge of art and artists.', 1, 29.99),
-
-  -- Trending Discussions
-  ('EDU_ADM_70248', 'Hot Topic Debates', 3, 2, NULL, 'Streaming trending debates on hot educational topics.', 1, 14.99),
-  ('EDU_ADM_70248', 'Language Exchange', 3, 2, NULL, 'Streaming language exchange discussions.', 0, 0.00),
-  ('EDU_ADM_70248', 'Science Talks', 3, 2, NULL, 'Streaming insightful discussions on scientific discoveries.', 1, 9.99),
-  ('EDU_ADM_70248', 'History Mysteries', 3, 2, NULL, 'Streaming intriguing discussions on historical mysteries.', 1, 14.99),
-  ('EDU_ADM_70248', 'Artistic Inspiration', 3, 2, NULL, 'Streaming discussions to inspire and appreciate art.', 0, 0.00),
-
-  -- Other Educational Content
-  ('EDU_ADM_70248', 'TEDx Inspire', 4, 1, NULL, 'Streaming inspiring TEDx talks on various educational topics.', 1, 9.99),
-  ('EDU_ADM_70248', 'Documentary Hub', 4, 1, NULL, 'Streaming captivating educational documentaries.', 1, 19.99),
-  ('EDU_ADM_70248', 'Edutainment Fun', 4, 1, NULL, 'Streaming educational content with a touch of entertainment.', 1, 14.99),
-  ('EDU_ADM_70248', 'Skill Showcase', 4, 1, NULL, 'Streaming showcases of unique educational skills.', 0, 0.00),
-  ('EDU_ADM_70248', 'Science Experiments', 4, 1, NULL, 'Streaming exciting science experiments and demonstrations.', 1, 24.99);
-
-
 IF EXISTS(SELECT * FROM sys.tables where [name]='Notes' )
 DROP TABLE Notes
 GO
@@ -499,4 +530,7 @@ IF EXISTS(SELECT * FROM sys.tables where [name]='SubItems' )
 DROP TABLE SubItems
 GO
 
-create table SubItems(itemId int identity(1,1) primary key,folderId int references Folders(folderId) ,NoteId bigint references Notes(notesId))
+create table SubItems(itemId bigint identity(1,1) primary key, LinkedFolderId int references Folders(folderId) ,NoteId bigint references Notes(notesId),folderId int references Folders(folderId))
+
+INSERT INTO Credentials VALUES ('EDU_ADM_7024857237','Arihant Jain','eduverse1802@gmail.com',7024857237,'jain@2001','EDU-AUTHOR',null)
+EXEC AssignRole 'EDU_ADM_7024857237'

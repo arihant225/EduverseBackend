@@ -36,10 +36,34 @@ namespace Eduverse.Backend.WebApi.Services
             return dto;
         }
 
+        public async Task<bool> DeleteFolder(int? folderId, string emailId, decimal? phoneno)
+        {
+            string? userId = await repo.userId(emailId, phoneno.GetValueOrDefault());
+            if (userId == null)
+            {
+                return false;
+            }
+            else
+            {
 
-        public async Task<AllItems?> OpenFolder(int? folderId, string emailId, decimal? phoneNo)
+                if (folderId == null)
+                {
+                    return false;
+                }
+                if (!await this.repo.validateFolder(folderId, userId))
+                    return false;
+
+                return await this.repo.DeleteFolder(folderId.GetValueOrDefault());
+
+
+            }
+        }
+            public async Task<AllItems?> OpenFolder(int? folderId, string emailId, decimal? phoneNo)
         {
             AllItems dtoDirectory = new();
+            dtoDirectory.IsolatedItemsNote = new();
+            List<EduverseDirectory> dto = new();
+            dtoDirectory.Directories = dto;
             string? userId = await repo.userId(emailId, phoneNo.GetValueOrDefault());
             if (userId == null)
             {
@@ -47,11 +71,13 @@ namespace Eduverse.Backend.WebApi.Services
             }
             else
             {
+                if(!await this.repo.validateFolder(folderId,userId))
+                    return null;    
                 List<SubItem> items=await this.repo.GetSubItems(folderId);
+                
                 if (items!=null&&items.Any()) {
                    
-                    dtoDirectory.IsolatedItemsNote = new();
-                    List<EduverseDirectory> dto = new();
+                 
                     foreach(SubItem item in items)
                     if (item.FolderId != null&&item.Folder!=null)
                     {

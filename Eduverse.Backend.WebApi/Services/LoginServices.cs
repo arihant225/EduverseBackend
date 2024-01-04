@@ -32,11 +32,14 @@ namespace Eduverse.Backend.WebApi.Services
             new Claim("email", cred.EmailId),
             new Claim("phone", cred.PhoneNumber.ToString())
         };
-                List<Claim> claimsOfanUser= new List<Claim>();
-                cred.EduverseRoles.ToList().ForEach(claim =>
+
+                List<Claim> claimsOfanUser = new List<Claim>();
+                if (cred.Role!=null&&cred.Role.Any())
                 {
-                    claimsOfanUser.Add(new Claim(ClaimTypes.Role, claim.Role));
-                });
+
+                    claimsOfanUser.Add(new Claim("roles", string.Join(",", cred.EduverseRoles.Select(role => role.Role).ToList().ToArray())));
+                }
+        
                 claimsOfanUser.AddRange(claims);
 
 
@@ -51,11 +54,10 @@ namespace Eduverse.Backend.WebApi.Services
                 {
                     username = cred.Name,
                     expiration = DateTime.Now.AddMinutes(30),
-                    Email = cred.EmailId,
-                    JWTToken = new JwtSecurityTokenHandler().WriteToken(token)
+                    email = cred.EmailId,
+                    JWTToken = new JwtSecurityTokenHandler().WriteToken(token),
+                    roles = cred.EduverseRoles.Select(role => role.Role).ToList()
                 };
-
-            
             }
             else
             {
@@ -65,12 +67,4 @@ namespace Eduverse.Backend.WebApi.Services
 
     }
 }
-
-
-    //ValidIssuer = builder.Configuration["JWT:Issuer"],
-    //    ValidAudience = builder.Configuration["JWT:Audience"],
-    //    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])),
-    //    ValidateLifetime = true,
-    //    ValidateAudience = true,
-    //    ValidateIssuer = true
 

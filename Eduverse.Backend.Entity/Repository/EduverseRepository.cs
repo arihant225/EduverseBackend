@@ -182,15 +182,15 @@ namespace Eduverse.Backend.Entity.Repository
 
         public bool CreateCredentials(Credential credential)
         {
-            credential.Role = "self";
+            credential.Role = String.IsNullOrEmpty(credential.Role)?"user":credential.Role;
             credential.EduverseId = "";
 
-            int rowManipulated = this.Context.Database.ExecuteSqlInterpolated($"EXEC EnteringCredentials {credential.Name},{credential.EmailId.ToLower()},{credential.PhoneNumber},{credential.Password},{credential.Role}");
+            int rowManipulated = this.Context.Database.ExecuteSqlInterpolated($"EXEC AddCredentials {credential.Name},{credential.EmailId.ToLower()},{credential.PhoneNumber},{credential.Password},{credential.Role}");
 
             Context.SaveChanges();
             if (rowManipulated > 0)
             {
-                var temp = this.Context.Credentials.Where(cred => cred.Equals(credential.EmailId.ToLower()) && cred.Password == credential.Password).FirstOrDefault();
+                Credential? temp = this.Context.Credentials.Where(cred => cred.EmailId.Equals(credential.EmailId.ToLower()) && cred.Password == credential.Password).FirstOrDefault();
 
                 var subject = "welcome to Eduverse";
                 if (temp != null)
@@ -204,19 +204,8 @@ namespace Eduverse.Backend.Entity.Repository
         }
 
 
-        public List<Stream>? EduverseStreams()
-        {
-            try
-            {
-                return this.Context.Streams.Where(obj => obj.Public != 0).ToList();
-            }
-            catch (Exception e)
-            {
-                return null;
-            }
-
-        }
-        public async Task<Note?> SaveNotes(string emailId, decimal phoneNumber, Note notes,int?parentFolderId)
+      
+        public async Task<Note?> SaveNotes(string emailId, decimal phoneNumber, Note notes, int? parentFolderId)
         {
             try
             {
@@ -226,14 +215,14 @@ namespace Eduverse.Backend.Entity.Repository
                 {
                     var tempNote = await this.Context.Notes.Where(note => note.NotesId == notes.NotesId).FirstOrDefaultAsync();
 
-                    if (tempNote!=null)
+                    if (tempNote != null)
                     {
-                    
+
                         tempNote.Body = notes.Body;
-                        tempNote.BodyStyle = notes.BodyStyle;   
+                        tempNote.BodyStyle = notes.BodyStyle;
                         tempNote.IsPrivate = notes.IsPrivate;
-                        tempNote.Title=notes.Title;
-                        tempNote.TitleStyle=notes.TitleStyle;
+                        tempNote.Title = notes.Title;
+                        tempNote.TitleStyle = notes.TitleStyle;
                         this.Context.Notes.Update(tempNote);
                     }
                     else
@@ -246,18 +235,18 @@ namespace Eduverse.Backend.Entity.Repository
                     SubItem? linkedRecord = await this.Context.SubItems.Where(obj => obj.NoteId == notes.NotesId).FirstOrDefaultAsync();
                     if (linkedRecord == null)
                     {
-                     
-                            linkedRecord = new()
-                            {
-                                NoteId = notes.NotesId,
-                                LinkedFolderId = parentFolderId
 
-                            };
-                            if (linkedRecord != null)
-                            {
-                                this.Context.SubItems.Add(linkedRecord);
-                            }
-                        
+                        linkedRecord = new()
+                        {
+                            NoteId = notes.NotesId,
+                            LinkedFolderId = parentFolderId
+
+                        };
+                        if (linkedRecord != null)
+                        {
+                            this.Context.SubItems.Add(linkedRecord);
+                        }
+
                     }
                     else
                     {
@@ -280,13 +269,13 @@ namespace Eduverse.Backend.Entity.Repository
 
 
 
-        public async Task<Folder?> SaveFolder(Folder folder,string userId,int? parentFolderId) {
+        public async Task<Folder?> SaveFolder(Folder folder, string userId, int? parentFolderId) {
             if (folder == null)
                 return null;
-            Folder? temp =await this.Context.Folders.Where(obj => obj.FolderId == folder.FolderId).FirstOrDefaultAsync();
+            Folder? temp = await this.Context.Folders.Where(obj => obj.FolderId == folder.FolderId).FirstOrDefaultAsync();
             if (temp != null)
             {
-                
+
                 temp.FolderName = folder.FolderName;
                 this.Context.Folders.Update(temp);
             }
@@ -294,25 +283,25 @@ namespace Eduverse.Backend.Entity.Repository
 
             else {
                 folder.Userid = userId;
-            this.Context.Folders.Add(folder);
+                this.Context.Folders.Add(folder);
             }
             await this.Context.SaveChangesAsync();
-         
-                SubItem? linkedRecord = await this.Context.SubItems.Where(obj => obj.LinkedFolderId == folder.FolderId).FirstOrDefaultAsync();
+
+            SubItem? linkedRecord = await this.Context.SubItems.Where(obj => obj.LinkedFolderId == folder.FolderId).FirstOrDefaultAsync();
             if (linkedRecord == null)
             {
-               
-                    linkedRecord = new()
-                    {
-                        FolderId = folder.FolderId,
-                        LinkedFolderId = parentFolderId
 
-                    };
-                    if (linkedRecord != null)
-                    {
-                        this.Context.SubItems.Add(linkedRecord);
-                    }
-                
+                linkedRecord = new()
+                {
+                    FolderId = folder.FolderId,
+                    LinkedFolderId = parentFolderId
+
+                };
+                if (linkedRecord != null)
+                {
+                    this.Context.SubItems.Add(linkedRecord);
+                }
+
             }
             else
             {
@@ -320,13 +309,40 @@ namespace Eduverse.Backend.Entity.Repository
                 this.Context.SubItems.Update(linkedRecord);
             }
             await this.Context.SaveChangesAsync();
-            return folder;        
+            return folder;
         }
+        public async Task<bool> DeleteFolder(int id) {
+         Folder? folder=  await this.Context.Folders.FindAsync(id);
+            if (folder != null)
+            {
+                try
+                {
+                    List<SubItem> subItems = await this.Context.SubItems.Where(obj => obj.LinkedFolderId == id||obj.FolderId==id).ToListAsync();
+                    if (subItems.Any())
+                    {
+                        this.Context.SubItems.RemoveRange(subItems);
+                        await this.Context.SaveChangesAsync(true);
+                    }
+                    this.Context.Folders.Remove(folder);
+                    await this.Context.SaveChangesAsync();
+                    return true;
+                }
+                catch { 
+                return false;
+                }
+
+                
+            }
+            return false;
+
+        }
+        public async Task<bool> validateFolder(int? folderId,string userId) => folderId == null || (await this.Context.Folders.Where(obj=>obj.FolderId==folderId&&obj.Userid==userId).FirstOrDefaultAsync()!=null);
 
         public async Task<List<SubItem>> GetSubItems(int? folderId) => await this.Context.SubItems.Where(obj => obj.LinkedFolderId == folderId).Include(obj=>obj.Note).Include(obj=>obj.Folder).ToListAsync();
 
         public async Task<Note?> GetNotes(long id, string userId) => await this.Context.Notes.Where(obj => obj.NotesId == id && obj.UserId == userId && obj.IsPrivate == true || obj.NotesId == id  && obj.IsPrivate != true).FirstOrDefaultAsync();
 
         public async Task<string?> userId(string id, decimal number) => await this.Context.Credentials.Where(cred => cred.EmailId == id && number == cred.PhoneNumber).Select(obj => obj.EduverseId).FirstOrDefaultAsync();
+        public async Task<List<RegisterdInstitute>> GetAllInstitutes() => await this.Context.RegisterdInstitutes.ToListAsync();
     }
 }

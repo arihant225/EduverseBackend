@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,7 @@ builder.Services.AddScoped<IEduverseRepository, EduverseRepository>();
 builder.Services.AddScoped<ILoginService, LoginServices>();
 builder.Services.AddScoped<IDirectoryService, DirectoryService>();
 builder.Services.AddScoped<INotesService, NoteService>();
+builder.Services.AddScoped<IAuthorService, AuthorService>();
 // Add services to the container.
 
 builder.Services.AddAuthentication(options =>
@@ -54,12 +56,37 @@ if (app.Environment.IsDevelopment())
 }
 app.UseCors("EduverseCorsPolicy");
 
+
 app.UseRouting();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path != null )
+    {
+       string endpoint = context.Request.Path;
+        HttpContext userContext = context.Request.HttpContext;
+        var user = userContext.User;
+        Claim? roles = user?.Claims.Where(ele => ele.Type.ToString().Contains("role")).FirstOrDefault();
+        if (roles != null)
+        {
 
+            if (endpoint.ToUpper().Contains("ADMIN") && !roles.Value.Contains("ADMIN"))
+                return;
+
+            if (endpoint.ToUpper().Contains("AUTHOR") && !roles.Value.Contains("EDU-AUTHOR"))
+                return;
+
+        }
+
+
+
+    }
+
+    await next();
+});
 app.MapControllers();
 
 app.Run();

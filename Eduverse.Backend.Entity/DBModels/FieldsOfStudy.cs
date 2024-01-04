@@ -9,5 +9,5 @@ public partial class FieldsOfStudy
 
     public string FieldName { get; set; } = null!;
 
-    public virtual ICollection<Subject> Subjects { get; set; } = new List<Subject>();
+    public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
 }

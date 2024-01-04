@@ -15,6 +15,8 @@ public partial class EduverseContext : DbContext
     {
     }
 
+    public virtual DbSet<Course> Courses { get; set; }
+
     public virtual DbSet<Credential> Credentials { get; set; }
 
     public virtual DbSet<EduverseRole> EduverseRoles { get; set; }
@@ -27,15 +29,13 @@ public partial class EduverseContext : DbContext
 
     public virtual DbSet<Note> Notes { get; set; }
 
-    public virtual DbSet<SmtpMailCredential> SmtpMailCredentials { get; set; }
+    public virtual DbSet<RegisterdInstitute> RegisterdInstitutes { get; set; }
 
-    public virtual DbSet<Stream> Streams { get; set; }
+    public virtual DbSet<SmtpMailCredential> SmtpMailCredentials { get; set; }
 
     public virtual DbSet<SubItem> SubItems { get; set; }
 
     public virtual DbSet<Subgenre> Subgenres { get; set; }
-
-    public virtual DbSet<Subject> Subjects { get; set; }
 
     public virtual DbSet<TempOtp> TempOtps { get; set; }
 
@@ -45,13 +45,28 @@ public partial class EduverseContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Course>(entity =>
+        {
+            entity.HasKey(e => e.SubjectId).HasName("PK__Courses__AC1BA388AFB31241");
+
+            entity.Property(e => e.SubjectId).HasColumnName("SubjectID");
+            entity.Property(e => e.FieldId).HasColumnName("FieldID");
+            entity.Property(e => e.SubjectName)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.Field).WithMany(p => p.Courses)
+                .HasForeignKey(d => d.FieldId)
+                .HasConstraintName("FK__Courses__FieldID__5441852A");
+        });
+
         modelBuilder.Entity<Credential>(entity =>
         {
-            entity.HasKey(e => e.EduverseId).HasName("PK__Credenti__EB5B5E108A990E8A");
+            entity.HasKey(e => e.EduverseId).HasName("PK__Credenti__EB5B5E105227CC08");
 
-            entity.HasIndex(e => e.PhoneNumber, "UQ__Credenti__4849DA01B6977241").IsUnique();
+            entity.HasIndex(e => e.PhoneNumber, "UQ__Credenti__4849DA010ECF2371").IsUnique();
 
-            entity.HasIndex(e => e.EmailId, "UQ__Credenti__87355E730B7690D7").IsUnique();
+            entity.HasIndex(e => e.EmailId, "UQ__Credenti__87355E734208C9CD").IsUnique();
 
             entity.Property(e => e.EduverseId)
                 .HasMaxLength(50)
@@ -60,6 +75,7 @@ public partial class EduverseContext : DbContext
                 .HasMaxLength(300)
                 .IsUnicode(false)
                 .HasColumnName("emailId");
+            entity.Property(e => e.InstitutitionalId).HasColumnName("institutitionalId");
             entity.Property(e => e.Name)
                 .HasMaxLength(300)
                 .IsUnicode(false)
@@ -74,11 +90,15 @@ public partial class EduverseContext : DbContext
             entity.Property(e => e.Role)
                 .HasMaxLength(50)
                 .IsUnicode(false);
+
+            entity.HasOne(d => d.Institutitional).WithMany(p => p.Credentials)
+                .HasForeignKey(d => d.InstitutitionalId)
+                .HasConstraintName("FK__Credentia__insti__403A8C7D");
         });
 
         modelBuilder.Entity<EduverseRole>(entity =>
         {
-            entity.HasKey(e => e.RoleId).HasName("PK__Eduverse__8AFACE1A12449405");
+            entity.HasKey(e => e.RoleId).HasName("PK__Eduverse__8AFACE1A50E216FA");
 
             entity.HasIndex(e => new { e.Role, e.EduverseId }, "UNIQUE_EDUVERSEROLE_CREDENTIALS").IsUnique();
 
@@ -98,7 +118,7 @@ public partial class EduverseContext : DbContext
 
         modelBuilder.Entity<FieldsOfStudy>(entity =>
         {
-            entity.HasKey(e => e.FieldId).HasName("PK__FieldsOf__C8B6FF27104C6025");
+            entity.HasKey(e => e.FieldId).HasName("PK__FieldsOf__C8B6FF275FB485AB");
 
             entity.ToTable("FieldsOfStudy");
 
@@ -110,7 +130,7 @@ public partial class EduverseContext : DbContext
 
         modelBuilder.Entity<Folder>(entity =>
         {
-            entity.HasKey(e => e.FolderId).HasName("PK__Folders__C2FABF939A9C7EE0");
+            entity.HasKey(e => e.FolderId).HasName("PK__Folders__C2FABF93FB07023B");
 
             entity.Property(e => e.FolderId).HasColumnName("folderId");
             entity.Property(e => e.FolderName)
@@ -124,12 +144,12 @@ public partial class EduverseContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Folders)
                 .HasForeignKey(d => d.Userid)
-                .HasConstraintName("FK__Folders__userid__1332DBDC");
+                .HasConstraintName("FK__Folders__userid__59FA5E80");
         });
 
         modelBuilder.Entity<Genre>(entity =>
         {
-            entity.HasKey(e => e.GenreId).HasName("PK__Genre__0385055E36180F7F");
+            entity.HasKey(e => e.GenreId).HasName("PK__Genre__0385055EBF707D65");
 
             entity.ToTable("Genre");
 
@@ -141,7 +161,7 @@ public partial class EduverseContext : DbContext
 
         modelBuilder.Entity<Note>(entity =>
         {
-            entity.HasKey(e => e.NotesId).HasName("PK__Notes__CFE3168621DF6C6D");
+            entity.HasKey(e => e.NotesId).HasName("PK__Notes__CFE31686B50A70D2");
 
             entity.Property(e => e.NotesId).HasColumnName("notesId");
             entity.Property(e => e.Body)
@@ -164,12 +184,31 @@ public partial class EduverseContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Notes)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Notes__userId__10566F31");
+                .HasConstraintName("FK__Notes__userId__571DF1D5");
+        });
+
+        modelBuilder.Entity<RegisterdInstitute>(entity =>
+        {
+            entity.HasKey(e => e.InstitutitionalId).HasName("PK__Register__4B1CCF2659C98D25");
+
+            entity.Property(e => e.InstitutitionalId).HasColumnName("institutitionalId");
+            entity.Property(e => e.InstituteName)
+                .HasMaxLength(300)
+                .IsUnicode(false)
+                .HasColumnName("instituteName");
+            entity.Property(e => e.Logo)
+                .HasMaxLength(400)
+                .IsUnicode(false)
+                .HasColumnName("logo");
+            entity.Property(e => e.Status)
+                .HasMaxLength(300)
+                .IsUnicode(false)
+                .HasColumnName("status");
         });
 
         modelBuilder.Entity<SmtpMailCredential>(entity =>
         {
-            entity.HasKey(e => e.SmtpMailCredentialsId).HasName("PK__smtpMail__ED725F103697E6A1");
+            entity.HasKey(e => e.SmtpMailCredentialsId).HasName("PK__smtpMail__ED725F10FBB50483");
 
             entity.ToTable("smtpMailCredentials");
 
@@ -195,60 +234,29 @@ public partial class EduverseContext : DbContext
                 .HasColumnName("server");
         });
 
-        modelBuilder.Entity<Stream>(entity =>
-        {
-            entity.HasNoKey();
-
-            entity.Property(e => e.EduverseId)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.Image).HasColumnName("image");
-            entity.Property(e => e.Paid).HasColumnName("paid");
-            entity.Property(e => e.Price)
-                .HasColumnType("money")
-                .HasColumnName("price");
-            entity.Property(e => e.StreamerDescription)
-                .HasMaxLength(200)
-                .IsUnicode(false);
-            entity.Property(e => e.StreamerId).ValueGeneratedOnAdd();
-            entity.Property(e => e.StreamerName)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-
-            entity.HasOne(d => d.Eduverse).WithMany()
-                .HasForeignKey(d => d.EduverseId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CREDENTIALS_Streamer");
-
-            entity.HasOne(d => d.StreamerTypeNavigation).WithMany()
-                .HasForeignKey(d => d.StreamerType)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Streams__Streame__5DCAEF64");
-        });
-
         modelBuilder.Entity<SubItem>(entity =>
         {
-            entity.HasKey(e => e.ItemId).HasName("PK__SubItems__56A128AAECC205DC");
+            entity.HasKey(e => e.ItemId).HasName("PK__SubItems__56A128AA8675236B");
 
             entity.Property(e => e.ItemId).HasColumnName("itemId");
             entity.Property(e => e.FolderId).HasColumnName("folderId");
 
             entity.HasOne(d => d.Folder).WithMany(p => p.SubItemFolders)
                 .HasForeignKey(d => d.FolderId)
-                .HasConstraintName("FK__SubItems__folder__395884C4");
+                .HasConstraintName("FK__SubItems__folder__5EBF139D");
 
             entity.HasOne(d => d.LinkedFolder).WithMany(p => p.SubItemLinkedFolders)
                 .HasForeignKey(d => d.LinkedFolderId)
-                .HasConstraintName("FK__SubItems__Linked__37703C52");
+                .HasConstraintName("FK__SubItems__Linked__5CD6CB2B");
 
             entity.HasOne(d => d.Note).WithMany(p => p.SubItems)
                 .HasForeignKey(d => d.NoteId)
-                .HasConstraintName("FK__SubItems__NoteId__3864608B");
+                .HasConstraintName("FK__SubItems__NoteId__5DCAEF64");
         });
 
         modelBuilder.Entity<Subgenre>(entity =>
         {
-            entity.HasKey(e => e.SubgenreId).HasName("PK__Subgenre__25469A99310A9EC9");
+            entity.HasKey(e => e.SubgenreId).HasName("PK__Subgenre__25469A99F147A4C5");
 
             entity.ToTable("Subgenre");
 
@@ -263,24 +271,9 @@ public partial class EduverseContext : DbContext
                 .HasConstraintName("FK__Subgenre__GenreI__4F7CD00D");
         });
 
-        modelBuilder.Entity<Subject>(entity =>
-        {
-            entity.HasKey(e => e.SubjectId).HasName("PK__Subjects__AC1BA388DEB81FF8");
-
-            entity.Property(e => e.SubjectId).HasColumnName("SubjectID");
-            entity.Property(e => e.FieldId).HasColumnName("FieldID");
-            entity.Property(e => e.SubjectName)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-
-            entity.HasOne(d => d.Field).WithMany(p => p.Subjects)
-                .HasForeignKey(d => d.FieldId)
-                .HasConstraintName("FK__Subjects__FieldI__5441852A");
-        });
-
         modelBuilder.Entity<TempOtp>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Temp_OTP__3214EC07E1C910B3");
+            entity.HasKey(e => e.Id).HasName("PK__Temp_OTP__3214EC07057013AA");
 
             entity.ToTable("Temp_OTPs");
 

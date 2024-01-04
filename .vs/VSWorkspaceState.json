@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\Eduverse.Backend.Testing",
+    "\\Eduverse.Backend.WebApi",
+    "\\Eduverse.Backend.WebApi\\Controllers",
+    "\\Eduverse.Backend.WebApi\\Models",
+    "\\Eduverse.Backend.WebApi\\Models\\Request",
+    "\\Eduverse.Backend.WebApi\\Services"
+  ],
+  "SelectedNode": "\\Eduverse.Backend.Entity.sln",
+  "PreviewInSolutionExplorer": false
+}
