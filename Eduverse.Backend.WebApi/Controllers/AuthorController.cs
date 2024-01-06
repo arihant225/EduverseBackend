@@ -1,4 +1,5 @@
-﻿using Eduverse.Backend.WebApi.Services.Interface;
+﻿using Eduverse.Backend.WebApi.Services;
+using Eduverse.Backend.WebApi.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,5 +21,27 @@ namespace Eduverse.Backend.WebApi.Controllers
         public async Task<IActionResult> getStats() {
             return StatusCode(200, await _AuthorService.GetStats());
         }
+        [Route("{type}")]
+        [HttpGet]
+        public async Task<IActionResult> SearchInstitute([FromRoute] string type)
+        {
+            try
+            {
+                dynamic listOfInstitute=await _AuthorService.SearchInstitute(type);
+                if(listOfInstitute==null)
+                {
+                    return BadRequest();
+                }
+                else
+                {
+                    return Ok(listOfInstitute); 
+                }
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
     }
+    }
+   
 }

@@ -6,7 +6,7 @@
         Blocked,
         Inactive,
         Total,
-        NewRequests
+        Query
     }
 
 

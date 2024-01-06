@@ -59,6 +59,13 @@ CREATE TABLE [dbo].[RegisterdInstitutes](
 	[instituteName] [varchar](300) NOT NULL,
 	[status] [varchar](300) NOT NULL,
 	[logo] [varchar](400) NULL,
+	[instituteType] [varchar](50) NULL,
+	[Url] [varchar](400) null,
+	[PhoneNo] [varchar](10) null,
+	[comment] varchar(500) null,
+	[GUIDAccessor] varchar(500) null,
+	[Email] varchar(300) null
+
 PRIMARY KEY CLUSTERED 
 (
 	[institutitionalId] ASC
@@ -79,8 +86,8 @@ END
 CREATE TABLE [dbo].[Credentials](
 	[EduverseId] [varchar](50) NOT NULL,
 	[NAME] [varchar](300) NOT NULL,
-	[emailId] [varchar](300) NOT NULL,
-	[phoneNumber] [decimal](10, 0) NOT NULL,
+	[emailId] [varchar](300)  NULL,
+	[phoneNumber] [decimal](10, 0)  NULL,
 	[password] [varchar](100) NOT NULL,
 	[Role] [varchar](50) NULL,
 	[institutitionalId] [int] NULL,
@@ -144,8 +151,6 @@ DROP PROCEDURE AddCredentials
 
 --connection String
 --scaffold-dbcontext "data source=areyhant;initial catalog=Eduverse;integrated security=true;trustservercertificate=false;trusted_connection=true;encrypt=false;" "Microsoft.EntityFrameworkCore.SqlServer" -outputDir "DBModels" -force
-
-
 
 IF  EXISTS(SELECT 1 FROM Sys.objects WHERE name = 'EduverseRoles')
 DROP TABLE EDUVERSEROLES
@@ -243,9 +248,6 @@ GO
 
 
 
-INSERT INTO  Credentials  values('EDU_ADM_70248','Arihant Jain','eduverse1802@gmail.com',7649006403,'Akansha@1802','ADMIN') 
-SELECT * FROM Credentials
-GO
 
 BEGIN
 
@@ -534,3 +536,5 @@ create table SubItems(itemId bigint identity(1,1) primary key, LinkedFolderId in
 
 INSERT INTO Credentials VALUES ('EDU_ADM_7024857237','Arihant Jain','eduverse1802@gmail.com',7024857237,'jain@2001','EDU-AUTHOR',null)
 EXEC AssignRole 'EDU_ADM_7024857237'
+SELECT * FROM Credentials
+SELECT * FROM EduverseRoles

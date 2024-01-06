@@ -57,10 +57,58 @@ namespace Eduverse.Backend.Entity.Functionality
             }
             return successStatus;
         }
-        
+
+        public int generateOtpForInQuery(string id, string username, string method, out bool generate)
+        {
+            int successStatus = -1;
+            generate = false;
+            if (method.ToLower().Equals("mail"))
+            {
+
+                SmtpMailCredential? mailCredential = eduverseRepository.getSMTPCredentials(SMTPCredentialsRole.otp);
+                if (mailCredential == null)
+                    return -1;
+                using (SmtpClient client = new(mailCredential.Server, mailCredential.Port.GetValueOrDefault()))
+                {
+                    client.EnableSsl = true;
+                    client.Credentials = new NetworkCredential(mailCredential.EmailId, mailCredential.Password);
+                    MailMessage message = new MailMessage(mailCredential.EmailId, id);
+                    message.Subject = "OTP verification for enrolling your institute";
+
+                    ;
+                    int otp = new Random().Next(100000, 999999);
+
+
+                    message.Body = $"Hello {username},\n\n"
+                 + $"Thank you for your inquiry to Enrolling your institute. Please confirm by providing the OTP below:\n\n"
+                 + $"OTP: {otp}\n\n"
+                 + $"Best regards,\nThe Eduverse Team"; try
+                    {
+                        eduverseRepository.GenerateOtpRecord(id, otp, method);
+                        client.Send(message);
+                        generate = true;
+                        successStatus = 1;
+                    }
+                    catch
+                    {
+                        successStatus = -2;
+                    }
+
+
+
+                }
+            }
+            else
+            {
+            }
+            return successStatus;
+        }
+
         public bool VerifyOtp(string id,int otp,DateTime requestedTime,out OtpEnums message) {
             return OtpGenerator.eduverseRepository.CheckOtp(id, otp, requestedTime, out message);
         
         }
+
+
     }
 }

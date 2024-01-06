@@ -14,6 +14,7 @@ builder.Services.AddScoped<ILoginService, LoginServices>();
 builder.Services.AddScoped<IDirectoryService, DirectoryService>();
 builder.Services.AddScoped<INotesService, NoteService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
+builder.Services.AddScoped<IInqueryService, InqueryService>();
 // Add services to the container.
 
 builder.Services.AddAuthentication(options =>

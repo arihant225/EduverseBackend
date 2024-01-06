@@ -9,9 +9,9 @@ public partial class Credential
 
     public string Name { get; set; } = null!;
 
-    public string EmailId { get; set; } = null!;
+    public string? EmailId { get; set; }
 
-    public decimal PhoneNumber { get; set; }
+    public decimal? PhoneNumber { get; set; }
 
     public string Password { get; set; } = null!;
 
