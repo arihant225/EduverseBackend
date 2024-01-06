@@ -24,6 +24,8 @@ namespace Eduverse.Backend.WebApi.Services
             dictionary.Add(InstitutionalStatus.Total.ToString(), 0);
             dictionary.Add(InstitutionalStatus.Blocked.ToString(), 0);
             dictionary.Add(InstitutionalStatus.Query.ToString(), 0);
+            dictionary.Add(InstitutionalStatus.CredentialCreated.ToString(), 0);
+            dictionary.Add(InstitutionalStatus.Withdrawn.ToString(), 0);
             List<RegisterdInstitute> institutes = await _repository.GetAllInstitutes();
             institutes.ForEach(inst =>
                                 {
@@ -39,7 +41,7 @@ namespace Eduverse.Backend.WebApi.Services
         {
             if (institituteType == InstitutionalStatus.Total.ToString())
             {
-                return await  this._repository.Context.RegisterdInstitutes.Select(
+                return await this._repository.Context.RegisterdInstitutes.Select(
                      obj => new Inquery()
                      {
                          InstituteName = obj.InstituteName,
@@ -49,7 +51,8 @@ namespace Eduverse.Backend.WebApi.Services
                          Url = obj.Url,
                          Comment = obj.Comment,
                          Status = obj.Status,
-                         
+                         Accessor = obj.Guidaccessor
+
 
                      }
 
@@ -68,7 +71,8 @@ namespace Eduverse.Backend.WebApi.Services
                             Path = obj.Logo,
                             Url = obj.Url,
                             Comment = obj.Comment,
-                            Status = obj.Status
+                            Status = obj.Status,
+                            Accessor = obj.Guidaccessor
 
                         }
                     ).ToListAsync();

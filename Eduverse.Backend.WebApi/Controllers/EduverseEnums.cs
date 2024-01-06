@@ -6,7 +6,9 @@
         Blocked,
         Inactive,
         Total,
-        Query
+        Query,
+        CredentialCreated,
+        Withdrawn
     }
 
 

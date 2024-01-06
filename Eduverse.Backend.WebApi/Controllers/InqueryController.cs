@@ -22,9 +22,9 @@ namespace Eduverse.Backend.WebApi.Controllers
         {
             try
             {
-                bool added =await inqueryService.AddInquery(inquery);   
-                if (added) {
-                    return StatusCode(200);
+                string? accessor =await inqueryService.AddInquery(inquery);   
+                if (accessor!=null) {
+                    return StatusCode(200,Json(accessor));
                 }
                 else
                 {
@@ -83,6 +83,20 @@ namespace Eduverse.Backend.WebApi.Controllers
                 return StatusCode(500);
             }
 
+
+
+        }
+        [Route("{proposal}")]
+        [HttpGet]
+        public async Task<IActionResult> SearchProposal(string proposal)
+        {
+            var inquery=await this.inqueryService.SearchProposal(proposal);   
+            if(inquery == null) 
+                return BadRequest();    
+            else
+            { return StatusCode(200,inquery); 
+            
+            } 
 
 
         }

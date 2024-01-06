@@ -21,5 +21,6 @@ namespace Eduverse.Backend.WebApi.Models.Request
         [Required(ErrorMessage = "Img  is required")]
         public IFormFile? Img { get; set; }
         public string? Path { get; internal set; }
+        public string? Accessor { get; internal set; }
     }
 }

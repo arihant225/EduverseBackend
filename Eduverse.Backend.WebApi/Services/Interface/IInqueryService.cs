@@ -4,6 +4,7 @@ namespace Eduverse.Backend.WebApi.Services.Interface
 {
     public interface IInqueryService
     {
-        public Task<bool> AddInquery(Inquery inquery);
+        public Task<string?> AddInquery(Inquery inquery);
+        public Task<Inquery?> SearchProposal(string accessor);
     }
 }

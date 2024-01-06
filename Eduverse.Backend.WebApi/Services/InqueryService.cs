@@ -6,6 +6,8 @@ using Eduverse.Backend.WebApi.Services.Interface;
 using System.Net.Mail;
 using System.Net;
 using Eduverse.Backend.Entity.PropertyClasses;
+using Microsoft.EntityFrameworkCore;
+
 namespace Eduverse.Backend.WebApi.Services
 {
     public class InqueryService: IInqueryService
@@ -15,8 +17,8 @@ namespace Eduverse.Backend.WebApi.Services
             this._repo = repo;
         }
         
-        public async Task<bool> AddInquery (Inquery inquery){
-            if(inquery==null) return false; 
+        public async Task<string?> AddInquery (Inquery inquery){
+            if(inquery==null) return null; 
 
             string path= UploadDownloadService.upload(inquery.Img);
             RegisterdInstitute institute= new RegisterdInstitute();     
@@ -29,10 +31,11 @@ namespace Eduverse.Backend.WebApi.Services
             institute.Url = inquery.Url;    
             institute.Guidaccessor =  Guid.NewGuid().ToString();
             institute.Status = InstitutionalStatus.Query.ToString();
+        
             await _repo.Context.RegisterdInstitutes.AddAsync(institute);   
             await _repo.Context.SaveChangesAsync();
             this.SendCopyOfProposal(institute);
-            return true;    
+            return institute.Guidaccessor;    
         }
 
         public int SendCopyOfProposal(RegisterdInstitute institute)
@@ -75,6 +78,24 @@ namespace Eduverse.Backend.WebApi.Services
             return successStatus;
         }
 
+        public async  Task<Inquery?> SearchProposal(string accessor)
+        {
+             RegisterdInstitute? inst= await _repo.Context.RegisterdInstitutes.FirstOrDefaultAsync(inst=>inst.Guidaccessor == accessor);      
+            if (inst == null) return null;
+            Inquery? inquery = new()
+            {
+                Accessor = accessor,
+                Status = inst.Status,
+                Path = inst.Logo,
+                Comment = inst.Comment,
+                EmailId = inst.Email == null ? "" : inst.Email,
+                PhoneNo = inst.PhoneNo == null ? "" : inst.PhoneNo,
+                InstituteName = inst.InstituteName,
+                InstituteType = inst.InstituteType == null ? "" : inst.InstituteType,
+                Url = inst.Url,
 
+            };
+            return inquery; 
+        }
     }
 }
