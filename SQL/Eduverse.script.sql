@@ -90,6 +90,7 @@ CREATE TABLE [dbo].[Credentials](
     [password] [varchar](100) NOT NULL,
     [Role] [varchar](50) NULL,
     [institutitionalId] [int] NULL,
+	[status] varchar(25) null,
     [GUIDAccessor] varchar(500) null UNIQUE,
     CONSTRAINT [PK_Credentials_EduverseId] PRIMARY KEY CLUSTERED ([EduverseId] ASC),
     CONSTRAINT [FK_Credentials_RegisterdInstitutes] FOREIGN KEY ([institutitionalId]) REFERENCES [dbo].[RegisterdInstitutes]([institutitionalId]),
@@ -153,12 +154,12 @@ END
 IF(UPPER(@ROLE)='ADMIN')
 BEGIN
 INSERT INTO EduverseRoles values(@EduverseId,'ADMIN'),
-(@EduverseId,'USER'),(@EduverseId,'ORGINISATION')
+(@EduverseId,'USER')
 END 
-ELSE IF(UPPER(@ROLE)='ORGINISATION')
+ELSE IF(UPPER(@ROLE)='ORGANISATION')
 BEGIN
 INSERT INTO EduverseRoles VALUES
-(@EduverseId,'ORGINISATION'),(@EduverseId,'USER')
+(@EduverseId,'ORGANISATION'),(@EduverseId,'USER'),(@EduverseId,'ADMIN')
 END 
 ELSE IF(UPPER(@ROLE)='USER')
 BEGIN
@@ -176,7 +177,8 @@ CREATE OR ALTER PROCEDURE [dbo].[AddCredentials]
     @PASSWORD VARCHAR(100)= null,
     @ROLE VARCHAR(100),
 	@GuidAccessor varchar(500)= null,
-	@instituitionalId int= null
+	@instituitionalId int= null,
+	@UserId varchar(50) =null
 AS
 BEGIN
 
@@ -184,21 +186,33 @@ BEGIN
 	BEGIN 
 	RETURN -1;
 	END
-	
-	IF(UPPER(@role)='ADMIN' )
+	IF(ISNULL(@UserId,'')<>'')
+	BEGIN
+	IF EXISTS(SELECT 1 FROM Credentials WHERE EduverseId=@UserId)
+	BEGIN 
+	RETURN -1;
+	END
+	ELSE
+	BEGIN
+	INSERT INTO Credentials
+    VALUES (@UserId, @NAME, @EMAIL, @PHONENO, @PASSWORD, UPPER(@ROLE),@instituitionalId,'Active',@GuidAccessor);
+	END
+	END
+	 
+	ELSE IF(UPPER(@role)='ADMIN' )
 	BEGIN
     INSERT INTO Credentials
-    VALUES ('EDUVERSE_ADM_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'ADMIN',@instituitionalId,@GuidAccessor);
+    VALUES ('EDUVERSE_ADM_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'ADMIN',@instituitionalId,'Active',@GuidAccessor);
 	END
 	ELSE IF(UPPER(@role)<>'ADMIN' AND UPPER(@ROLE)='USER')
 	BEGIN
     INSERT INTO Credentials
-    VALUES ('EDUVERSE_USER_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'USER',@instituitionalId,@GuidAccessor);
+    VALUES ('EDUVERSE_USER_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'USER',@instituitionalId,'Active',@GuidAccessor);
 	END
-	IF(UPPER(@role)<>'ADMIN' AND UPPER(@ROLE)='ORGINISATION')
+	IF(UPPER(@role)<>'ADMIN' AND UPPER(@ROLE)='ORGANISATION')
 	BEGIN
     INSERT INTO Credentials
-    VALUES ('EDUVERSE_ORG_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'ORGINISATION',@instituitionalId,@GuidAccessor);
+    VALUES ('EDUVERSE_ORG_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'ORGANISATION',@instituitionalId,'Active',@GuidAccessor);
 	END
 
 	IF EXISTS (SELECT 1 FROM Credentials WHERE GUIDAccessor=@GuidAccessor)
@@ -501,15 +515,9 @@ create table SubItems(itemId bigint identity(1,1) primary key, LinkedFolderId in
 
 
 
-INSERT INTO Credentials VALUES ('EDU_ADM_7024857237','Arihant Jain','eduverse1802@gmail.com',7024857237,'jain@2001','EDU-AUTHOR',null,'d0c04037-37b8-467b-9c2a-e09483768d1c8')
+INSERT INTO Credentials VALUES ('EDU_ADM_7024857237','Arihant Jain','eduverse1802@gmail.com',7024857237,'jain@2001','EDU-AUTHOR',null,'Active','d0c04037-37b8-467b-9c2a-e09483768d1c8')
 EXEC AssignRole 'EDU_ADM_7024857237'
-SELECT * FROM Credentials
-SELECT * FROM EduverseRoles
-select * from RegisterdInstitutes
-select * from Temp_OTPs
 
-select * from credentials
-select * from RegisterdInstitutes
 
 SELECT * FROM CREDENTIALS
 
@@ -521,3 +529,13 @@ GO
 create table InstitutionalDomains(domainId int identity primary key, [status] varchar(50),parentDomainId int references InstitutionalDomains(DomainId), DomainName varchar(500), instituteId int references [RegisterdInstitutes]([institutitionalId]))
 
 select * from InstitutionalDomains
+
+
+
+IF EXISTS (SELECT 1 FROM sys.objects WHERE [object_id] = OBJECT_ID('[InstitutionalDomains'))
+BEGIN
+    DROP TABLE InstitutionalDomains;
+END
+GO
+
+create table InstitutionalRoles (RoleId int primary Key identity,EduverseId varchar(50) references Credentials(EduverseId),InstitutionalId int references [RegisterdInstitutes]([institutitionalId]), RoleType varchar(50))
