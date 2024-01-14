@@ -1,4 +1,5 @@
-﻿using Eduverse.Backend.WebApi.Services;
+﻿using Eduverse.Backend.WebApi.Models.Request;
+using Eduverse.Backend.WebApi.Services;
 using Eduverse.Backend.WebApi.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -42,6 +43,13 @@ namespace Eduverse.Backend.WebApi.Controllers
                 return StatusCode(500);
             }
     }
+
+        [HttpPost]
+        public async Task<IActionResult> ManageInstitues(InstituteActions actions)
+        {
+            await this._AuthorService.ManageInstitutes(actions);
+            return Ok(actions);    
+        }
     }
    
 }

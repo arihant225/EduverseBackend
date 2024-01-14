@@ -63,3 +63,4 @@ C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Tes
 C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Testing\obj\Debug\net7.0\Eduverse.Backend.Testing.pdb
 C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Testing\obj\Debug\net7.0\Eduverse.Backend.Testing.genruntimeconfig.cache
 C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Testing\obj\Debug\net7.0\ref\Eduverse.Backend.Testing.dll
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Testing\bin\Debug\net7.0\Csv.dll

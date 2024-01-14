@@ -77,3 +77,4 @@ C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.Web
 C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.WebApi\bin\Debug\net7.0\Microsoft.Extensions.Identity.Core.dll
 C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.WebApi\bin\Debug\net7.0\Microsoft.Extensions.Identity.Stores.dll
 C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.WebApi\bin\Debug\net7.0\Microsoft.Extensions.Options.dll
+C:\Users\jarih\source\repos\Backend\Eduverse.Backend.Entity\Eduverse.Backend.WebApi\bin\Debug\net7.0\Csv.dll

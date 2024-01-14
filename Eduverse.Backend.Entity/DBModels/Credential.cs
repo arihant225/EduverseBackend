@@ -19,9 +19,15 @@ public partial class Credential
 
     public int? InstitutitionalId { get; set; }
 
+    public string? Status { get; set; }
+
+    public string? Guidaccessor { get; set; }
+
     public virtual ICollection<EduverseRole> EduverseRoles { get; set; } = new List<EduverseRole>();
 
     public virtual ICollection<Folder> Folders { get; set; } = new List<Folder>();
+
+    public virtual ICollection<InstitutionalRole> InstitutionalRoles { get; set; } = new List<InstitutionalRole>();
 
     public virtual RegisterdInstitute? Institutitional { get; set; }
 

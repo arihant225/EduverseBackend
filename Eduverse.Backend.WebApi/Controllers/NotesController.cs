@@ -22,13 +22,12 @@ namespace Eduverse.Backend.WebApi.Controllers
             try
             {
 
+
                 HttpContext userContext = Request.HttpContext;
-                var user= userContext.User;
-                Claim? emailClaim = user?.Claims.Where(ele => ele.Type.ToString().Contains("emailaddress")).FirstOrDefault();
-                string? email=emailClaim?.Value;
-                Claim? phoneClaim = user?.Claims.Where(ele => ele.Type == "phone").FirstOrDefault();
-                decimal?  Phoneno= Convert.ToDecimal(phoneClaim?.Value);
-                if (email == null)
+                var user = userContext.User;
+                Claim? accessor = user?.Claims.Where(ele => ele.Type.ToString().Contains("accessor")).FirstOrDefault();
+
+                if (accessor == null || accessor.Value.Length == 0)
                 {
                     userContext.Session?.Clear();
                     return StatusCode(401);
@@ -37,7 +36,7 @@ namespace Eduverse.Backend.WebApi.Controllers
                 {
                     return StatusCode(500);
                 }
-                 return StatusCode(200,await this._notesService.SaveNotes(email, Phoneno.GetValueOrDefault(), notes));
+                 return StatusCode(200,await this._notesService.SaveNotes(accessor.Value, notes));
 
 
 
@@ -57,11 +56,9 @@ namespace Eduverse.Backend.WebApi.Controllers
 
                 HttpContext userContext = Request.HttpContext;
                 var user = userContext.User;
-                Claim? emailClaim = user?.Claims.Where(ele => ele.Type.ToString().Contains("emailaddress")).FirstOrDefault();
-                string? email = emailClaim?.Value;
-                Claim? phoneClaim = user?.Claims.Where(ele => ele.Type == "phone").FirstOrDefault();
-                decimal? Phoneno = Convert.ToDecimal(phoneClaim?.Value);
-                if (email == null)
+                Claim? accessor = user?.Claims.Where(ele => ele.Type.ToString().Contains("accessor")).FirstOrDefault();
+
+                if (accessor == null||accessor.Value.Length==0)
                 {
                     userContext.Session?.Clear();
                     return StatusCode(401);
@@ -70,7 +67,7 @@ namespace Eduverse.Backend.WebApi.Controllers
                 {
                     return StatusCode(404);
                 }
-                var note = await this._notesService.getNotesById(id, email, Phoneno.GetValueOrDefault());
+                var note = await this._notesService.getNotesById(id, accessor.Value);
                 if (note == null)
                 {
                     return StatusCode(404);

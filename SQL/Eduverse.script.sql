@@ -30,7 +30,6 @@ CREATE TABLE smtpMailCredentials (
     [server] VARCHAR(50),
     CONSTRAINT UQ_Role UNIQUE ([role])
 );
-
 -- Insert a row into 'smtpMailCredentials' table
 INSERT INTO smtpMailCredentials VALUES ('OTP-GENERATION', 'eduverse1802@gmail.com', 'gdqnynxshtlxjmoi', 587, 'smtp.gmail.com');
 
@@ -47,7 +46,7 @@ CREATE TABLE Temp_OTPs (
     Id VARCHAR(100) PRIMARY KEY,
     Method VARCHAR(40),
     Otp DECIMAL(6, 0),
-    GeneratedTimeStamp DATE
+    GeneratedTimeStamp datetime
 );
 
 IF EXISTS (SELECT 1 FROM sys.objects WHERE [object_id] = OBJECT_ID('[RegisterdInstitutes'))
@@ -63,7 +62,7 @@ CREATE TABLE [dbo].[RegisterdInstitutes](
 	[Url] [varchar](400) null,
 	[PhoneNo] [varchar](10) null,
 	[comment] varchar(500) null,
-	[GUIDAccessor] varchar(500) null,
+	[GUIDAccessor] varchar(500) null UNIQUE,
 	[Email] varchar(300) null
 
 PRIMARY KEY CLUSTERED 
@@ -84,52 +83,21 @@ END
 
 
 CREATE TABLE [dbo].[Credentials](
-	[EduverseId] [varchar](50) NOT NULL,
-	[NAME] [varchar](300) NOT NULL,
-	[emailId] [varchar](300)  NULL,
-	[phoneNumber] [decimal](10, 0)  NULL,
-	[password] [varchar](100) NOT NULL,
-	[Role] [varchar](50) NULL,
-	[institutitionalId] [int] NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[EduverseId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
-UNIQUE NONCLUSTERED 
-(
-	[phoneNumber] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
-UNIQUE NONCLUSTERED 
-(
-	[emailId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-
-ALTER TABLE [dbo].[Credentials]  WITH CHECK ADD FOREIGN KEY([institutitionalId])
-REFERENCES [dbo].[RegisterdInstitutes] ([institutitionalId])
-GO
-
-ALTER TABLE [dbo].[Credentials]  WITH CHECK ADD  CONSTRAINT [CHK_Email] CHECK  (([emailId] like '%_@__%.%'))
-GO
-
-ALTER TABLE [dbo].[Credentials] CHECK CONSTRAINT [CHK_Email]
-GO
-
-ALTER TABLE [dbo].[Credentials]  WITH CHECK ADD  CONSTRAINT [CHK_Password] CHECK  (([password] like '%[A-Za-z0-9]%[!@#$%^&*()]%'))
-GO
-
-ALTER TABLE [dbo].[Credentials] CHECK CONSTRAINT [CHK_Password]
-GO
-
-ALTER TABLE [dbo].[Credentials]  WITH CHECK ADD  CONSTRAINT [CHK_Role] CHECK  ((len([Role])>(0)))
-GO
-
-ALTER TABLE [dbo].[Credentials] CHECK CONSTRAINT [CHK_Role]
-GO
-
-ALTER TABLE [dbo].[Credentials]  WITH CHECK ADD CHECK  ((upper([Role])='EDU-AUTHOR' OR upper([Role])='USER' OR upper([Role])='ORGINISATION' OR upper([Role])='ADMIN'))
-GO
+    [EduverseId] [varchar](50) NOT NULL,
+    [NAME] [varchar](300) NOT NULL,
+    [emailId] [varchar](300)  NULL,
+    [phoneNumber] [decimal](10, 0)  NULL,
+    [password] [varchar](100) NOT NULL,
+    [Role] [varchar](50) NULL,
+    [institutitionalId] [int] NULL,
+    [GUIDAccessor] varchar(500) null UNIQUE,
+    CONSTRAINT [PK_Credentials_EduverseId] PRIMARY KEY CLUSTERED ([EduverseId] ASC),
+    CONSTRAINT [FK_Credentials_RegisterdInstitutes] FOREIGN KEY ([institutitionalId]) REFERENCES [dbo].[RegisterdInstitutes]([institutitionalId]),
+    CONSTRAINT [CHK_Credentials_Email] CHECK (([emailId] like '%_@__%.%')),
+    CONSTRAINT [CHK_Credentials_Password] CHECK (([password] like '%[A-Za-z0-9]%' AND [password] like '%[!@#$%^&*()]%')),
+    CONSTRAINT [CHK_Credentials_Role] CHECK (([Role] IS NULL OR LEN([Role]) > 0)),
+    CONSTRAINT [CHK_Credentials_ValidRoles] CHECK ((UPPER([Role]) IN ('EDU-AUTHOR', 'USER', 'ORGANISATION', 'ADMIN')))
+) ON [PRIMARY];
 
 
 
@@ -202,12 +170,13 @@ GO
 
 
 CREATE OR ALTER PROCEDURE [dbo].[AddCredentials]
-    @NAME VARCHAR(100),
-    @EMAIL VARCHAR(100),
-    @PHONENO DECIMAL(10, 0),
-    @PASSWORD VARCHAR(100),
+    @NAME VARCHAR(100) =null,
+    @EMAIL VARCHAR(100) =null,
+    @PHONENO DECIMAL(10, 0)= null,
+    @PASSWORD VARCHAR(100)= null,
     @ROLE VARCHAR(100),
-	@instituitionalId int=null
+	@GuidAccessor varchar(500)= null,
+	@instituitionalId int= null
 AS
 BEGIN
 
@@ -219,23 +188,23 @@ BEGIN
 	IF(UPPER(@role)='ADMIN' )
 	BEGIN
     INSERT INTO Credentials
-    VALUES ('EDUVERSE_ADM_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'ADMIN',@instituitionalId);
+    VALUES ('EDUVERSE_ADM_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'ADMIN',@instituitionalId,@GuidAccessor);
 	END
 	ELSE IF(UPPER(@role)<>'ADMIN' AND UPPER(@ROLE)='USER')
 	BEGIN
     INSERT INTO Credentials
-    VALUES ('EDUVERSE_STU_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'USER',@instituitionalId);
+    VALUES ('EDUVERSE_USER_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'USER',@instituitionalId,@GuidAccessor);
 	END
 	IF(UPPER(@role)<>'ADMIN' AND UPPER(@ROLE)='ORGINISATION')
 	BEGIN
     INSERT INTO Credentials
-    VALUES ('EDUVERSE_ORG_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'ORGINISATION',@instituitionalId);
+    VALUES ('EDUVERSE_ORG_' + CAST(NEXT VALUE FOR eduverseKey AS VARCHAR(50)), @NAME, @EMAIL, @PHONENO, @PASSWORD, 'ORGINISATION',@instituitionalId,@GuidAccessor);
 	END
 
-	IF EXISTS (SELECT 1 FROM Credentials WHERE phoneNumber=@PHONENO AND EMAILID=@EMAIL)
+	IF EXISTS (SELECT 1 FROM Credentials WHERE GUIDAccessor=@GuidAccessor)
 	BEGIN
 	DECLARE @EDUVERSEID VARCHAR(50) ;
-	SELECT @EDUVERSEID=EduverseID FROM Credentials WHERE phoneNumber=@PHONENO AND EMAILID=@EMAIL
+	SELECT @EDUVERSEID=EduverseID FROM Credentials WHERE GUIDAccessor=@GuidAccessor
 	EXEC ASSIGNROLE @EDUVERSEID
 	END
 END
@@ -249,15 +218,6 @@ GO
 
 
 
-BEGIN
-
-	DECLARE @EDUVERSEADMINID VARCHAR(50)
-	SELECT @EDUVERSEADMINID=EduverseID FROM Credentials WHERE phoneNumber=7649006403 AND EMAILID='eduverse1802@gmail.com'
-	PRINT @EDUVERSEADMINID
-	EXEC AssignRole @EDUVERSEADMINID
-
-	
-END
 
 
 
@@ -534,7 +494,30 @@ GO
 
 create table SubItems(itemId bigint identity(1,1) primary key, LinkedFolderId int references Folders(folderId) ,NoteId bigint references Notes(notesId),folderId int references Folders(folderId))
 
-INSERT INTO Credentials VALUES ('EDU_ADM_7024857237','Arihant Jain','eduverse1802@gmail.com',7024857237,'jain@2001','EDU-AUTHOR',null)
+
+
+
+
+
+
+
+INSERT INTO Credentials VALUES ('EDU_ADM_7024857237','Arihant Jain','eduverse1802@gmail.com',7024857237,'jain@2001','EDU-AUTHOR',null,'d0c04037-37b8-467b-9c2a-e09483768d1c8')
 EXEC AssignRole 'EDU_ADM_7024857237'
 SELECT * FROM Credentials
 SELECT * FROM EduverseRoles
+select * from RegisterdInstitutes
+select * from Temp_OTPs
+
+select * from credentials
+select * from RegisterdInstitutes
+
+SELECT * FROM CREDENTIALS
+
+IF EXISTS (SELECT 1 FROM sys.objects WHERE [object_id] = OBJECT_ID('[InstitutionalDomains'))
+BEGIN
+    DROP TABLE InstitutionalDomains;
+END
+GO
+create table InstitutionalDomains(domainId int identity primary key, [status] varchar(50),parentDomainId int references InstitutionalDomains(DomainId), DomainName varchar(500), instituteId int references [RegisterdInstitutes]([institutitionalId]))
+
+select * from InstitutionalDomains

@@ -1,14 +1,26 @@
-﻿namespace Eduverse.Backend.WebApi.Controllers
+﻿using System.ComponentModel;
+
+namespace Eduverse.Backend.WebApi.Controllers
 {
-   
-        public enum InstitutionalStatus { 
+
+    public enum InstitutionalStatus
+    {
+        [Description("Active")]
         Active,
+        [Description("Blocked")]
         Blocked,
+        [Description("Inactive")]
         Inactive,
+        [Description("Total")]
         Total,
+        [Description("Query")]
         Query,
-        CredentialCreated,
-        Withdrawn
+        [Description("Withdrawn")]
+        Withdrawn,
+        [Description("Rejected")]
+        Rejected,
+        [Description("Activate")]
+        Activate
     }
 
 

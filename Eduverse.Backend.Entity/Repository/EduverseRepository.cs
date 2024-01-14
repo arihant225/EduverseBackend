@@ -13,15 +13,15 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.EntityFrameworkCore;
 using Eduverse.Backend.Entity.Functionality;
 using System.Net;
-using Stream = Eduverse.Backend.Entity.DBModels.Stream;
+using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace Eduverse.Backend.Entity.Repository
 {
     public class EduverseRepository : IEduverseRepository
     {
         public EduverseContext Context { get; set; }
-        static Mail EmailSender = new Mail();
-
+        Mail EmailSender = new();
         public EduverseRepository()
         {
             Context = new EduverseContext();
@@ -41,6 +41,7 @@ namespace Eduverse.Backend.Entity.Repository
             {
                 if (otpObj.GeneratedTimeStamp != null)
                 {
+                    
                     if (otpObj.Otp == otp)
                     {
 
@@ -115,32 +116,19 @@ namespace Eduverse.Backend.Entity.Repository
         public Credential? getCredentials(string id, string password)
         {
             List<DBModels.Credential> credentials = new();
-            string authenticationType = "";
-            if (id.Length == 10)
-            {
-                authenticationType = "phone";
-            }
-            if (id.Contains("@"))
-            {
-                authenticationType = "email";
-            }
+            id = id.ToLower();
 
             try
             {
 
-                if (authenticationType == "email")
-                {
-                    credentials = this.Context.Credentials.Where(cred => cred.EmailId.ToLower().Equals(id.ToLower()) && cred.Password == password).Include(obj => obj.EduverseRoles).ToList();
-                }
-                else if (authenticationType == "phone")
-                {
-                    credentials = this.Context.Credentials.Where(cred => cred.PhoneNumber == Convert.ToInt64(id) && cred.Password == password).Include(obj => obj.EduverseRoles).ToList();
-                }
+
+                credentials = this.Context.Credentials.Where(cred => (cred.EduverseId.ToLower() == id||(cred.EmailId!=null&&cred.EmailId.ToLower()==id)||(""+cred.PhoneNumber==id)) && cred.Password == password).Include(inst=>inst.InstitutionalRoles).Include(obj => obj.EduverseRoles).Include(inst => inst.Institutitional).ToList();
+               
             }
             catch { }
             if (credentials.Count == 1)
             {
-                return credentials.FirstOrDefault();
+                return credentials.FirstOrDefault(cred=>cred.Institutitional==null||cred.Institutitional.Status=="Active");
             }
             else
                 return null;
@@ -168,6 +156,14 @@ namespace Eduverse.Backend.Entity.Repository
                     }
                     return false;
                 }
+                if(check == CheckEnums.ID) {
+                    if (this.Context.Credentials.Any(obj => obj.EduverseId.Equals(identity.ToLower())))
+                    {
+                        return true;
+                    }
+                    return false;
+
+                }
             }
             catch
             {
@@ -180,24 +176,64 @@ namespace Eduverse.Backend.Entity.Repository
 
 
 
-        public bool CreateCredentials(Credential credential)
+        public bool CreateCredentials(Credential credential,string? emailId="", string role = "User"   )
         {
             credential.Role = String.IsNullOrEmpty(credential.Role)?"user":credential.Role;
             credential.EduverseId = "";
-
-            int rowManipulated = this.Context.Database.ExecuteSqlInterpolated($"EXEC AddCredentials {credential.Name},{credential.EmailId.ToLower()},{credential.PhoneNumber},{credential.Password},{credential.Role}");
-
+            string accessor = Guid.NewGuid().ToString();
+            SqlParameter param1 = new SqlParameter("@NAME",credential.Name != null ? credential.Name : DBNull.Value);
+            if(credential.EmailId!=null)
+                credential.EmailId=credential.EmailId.ToLower();
+           
+            SqlParameter param2 = new SqlParameter("@EMAIL",credential.EmailId!=null?credential.EmailId:DBNull.Value);
+            SqlParameter param3 = new SqlParameter("@PHONENO",credential.PhoneNumber!=null?credential.PhoneNumber:DBNull.Value);
+            SqlParameter param4 = new SqlParameter("@PASSWORD",credential.Password);
+            SqlParameter param5 = new SqlParameter("@ROLE",credential.Role != null ? credential.Role : DBNull.Value);
+            SqlParameter param7 = new SqlParameter("@instituitionalId",credential.InstitutitionalId != null ? credential.InstitutitionalId : DBNull.Value);
+            SqlParameter param8 = new SqlParameter("@UserId",!string.IsNullOrEmpty(credential.EduverseId)? credential.EduverseId : DBNull.Value);
+            SqlParameter param6 = new SqlParameter("@GuidAccessor",accessor);
+            param1.IsNullable = true;
+            param2.IsNullable = true;
+            param3.IsNullable = true;
+            param4.IsNullable = true; param7.IsNullable = true;
+            param5.IsNullable = true;
+            param6.IsNullable = true;
+            int rowManipulated = 0;
+            try
+            {
+                 rowManipulated = this.Context.Database.ExecuteSqlRaw("EXEC AddCredentials @NAME, @EMAIL,@PHONENO,@PASSWORD,@ROLE,@GuidAccessor,@instituitionalId,@UserId", param1, param2, param3, param4, param5, param6, param7,param8);
+            }
+            catch (Exception ex) { 
+            Console.WriteLine(ex.ToString());   
+            }
             Context.SaveChanges();
             if (rowManipulated > 0)
-            {
-                Credential? temp = this.Context.Credentials.Where(cred => cred.EmailId.Equals(credential.EmailId.ToLower()) && cred.Password == credential.Password).FirstOrDefault();
+            {  
+               
+                Credential? temp = this.Context.Credentials.Where(cred =>  cred.Guidaccessor==accessor&& cred.Password == credential.Password).FirstOrDefault();
 
                 var subject = "welcome to Eduverse";
-                if (temp != null)
+                if(emailId!=null&&temp!=null)
+                {
+                    var message = $"Dear {credential.Name},\r\n\r\nCongratulations! Your account has been successfully created on Eduverse.\r\n\r\nYour unique Eduverse ID is: {temp?.EduverseId}\r\nYour Password is: {temp?.Password}\r\n\r\nThank you for joining Eduverse. We are excited to have you on board!\r\n\r\nBest regards,\r\nEduverse Team\r\n";
+                    EmailSender.SendText(emailId, message, subject);
+
+                }
+                else if (temp != null&&credential.EmailId!=null)
                 {
                     var message = $"Dear {credential.Name},\r\n\r\nCongratulations! Your account has been successfully created on Eduverse.\r\n\r\nYour unique Eduverse ID is: {temp?.EduverseId}\r\n\r\nThank you for joining Eduverse. We are excited to have you on board!\r\n\r\nBest regards,\r\nEduverse Team\r\n";
                     EmailSender.SendText(credential.EmailId, message, subject);
 
+                }
+                if(InstitutionalId!=null) { 
+                InstitutionalRole institutionalRole = new InstitutionalRole()
+                { 
+                InstitutionalId=credential.InstitutitionalId,
+                RoleType=role         
+                };
+
+                    this.Context.InstitutionalRoles.Add(institutionalRole);
+                    this.Context.SaveChanges();
                 }
             }
             return rowManipulated > 0;
@@ -205,12 +241,12 @@ namespace Eduverse.Backend.Entity.Repository
 
 
       
-        public async Task<Note?> SaveNotes(string emailId, decimal phoneNumber, Note notes, int? parentFolderId)
+        public async Task<Note?> SaveNotes(string accessor, Note notes, int? parentFolderId)
         {
             try
             {
 
-                string? userId = await this.userId(emailId, phoneNumber);
+                string? userId = await this.userId(accessor);
                 if (userId != null)
                 {
                     var tempNote = await this.Context.Notes.Where(note => note.NotesId == notes.NotesId).FirstOrDefaultAsync();
@@ -342,7 +378,8 @@ namespace Eduverse.Backend.Entity.Repository
 
         public async Task<Note?> GetNotes(long id, string userId) => await this.Context.Notes.Where(obj => obj.NotesId == id && obj.UserId == userId && obj.IsPrivate == true || obj.NotesId == id  && obj.IsPrivate != true).FirstOrDefaultAsync();
 
-        public async Task<string?> userId(string id, decimal number) => await this.Context.Credentials.Where(cred => cred.EmailId == id && number == cred.PhoneNumber).Select(obj => obj.EduverseId).FirstOrDefaultAsync();
+        public async Task<string?> userId(string accessor) => await this.Context.Credentials.Where(cred => cred.Guidaccessor==accessor).Select(obj => obj.EduverseId).FirstOrDefaultAsync();
+        public async Task<int?> InstitutionalId(string accessor) => await this.Context.Credentials.Where(cred => cred.Guidaccessor == accessor).Select(obj => obj.InstitutitionalId).FirstOrDefaultAsync();
         public async Task<List<RegisterdInstitute>> GetAllInstitutes() => await this.Context.RegisterdInstitutes.ToListAsync();
     }
 }

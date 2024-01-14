@@ -16,13 +16,13 @@ namespace Eduverse.Backend.WebApi.Services
         repo= _repo;    
         }
 
-        public async Task<EduverseDirectory?> SaveFolder(EduverseDirectory dto,string emailId,decimal? phoneNo) { 
+        public async Task<EduverseDirectory?> SaveFolder(EduverseDirectory dto,string accessor) { 
 
             Folder? Entity=new Folder();
             Entity.FolderId = dto.FolderId;
             Entity.FolderName = dto.FolderName; 
        
-            string? userId= await repo.userId(emailId, phoneNo.GetValueOrDefault());
+            string? userId= await repo.userId(accessor);
 
                 if (userId == null ) {
                     return null;
@@ -36,9 +36,9 @@ namespace Eduverse.Backend.WebApi.Services
             return dto;
         }
 
-        public async Task<bool> DeleteFolder(int? folderId, string emailId, decimal? phoneno)
+        public async Task<bool> DeleteFolder(int? folderId, string accessor)
         {
-            string? userId = await repo.userId(emailId, phoneno.GetValueOrDefault());
+            string? userId = await repo.userId(accessor);
             if (userId == null)
             {
                 return false;
@@ -58,13 +58,13 @@ namespace Eduverse.Backend.WebApi.Services
 
             }
         }
-            public async Task<AllItems?> OpenFolder(int? folderId, string emailId, decimal? phoneNo)
+            public async Task<AllItems?> OpenFolder(int? folderId, string accessor)
         {
             AllItems dtoDirectory = new();
             dtoDirectory.IsolatedItemsNote = new();
             List<EduverseDirectory> dto = new();
             dtoDirectory.Directories = dto;
-            string? userId = await repo.userId(emailId, phoneNo.GetValueOrDefault());
+            string? userId = await repo.userId(accessor);
             if (userId == null)
             {
                 return null;
@@ -107,8 +107,8 @@ namespace Eduverse.Backend.WebApi.Services
             return dtoDirectory;
         }
 
-        public async Task<AllItems?> GetDirectory(string emailId, decimal? phoneNo) {
-                return await this.OpenFolder(null,emailId,phoneNo);
+        public async Task<AllItems?> GetDirectory(string accessor) {
+                return await this.OpenFolder(null,accessor);
 }
            
 

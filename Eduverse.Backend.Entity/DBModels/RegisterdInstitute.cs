@@ -26,4 +26,8 @@ public partial class RegisterdInstitute
     public string? Email { get; set; }
 
     public virtual ICollection<Credential> Credentials { get; set; } = new List<Credential>();
+
+    public virtual ICollection<InstitutionalDomain> InstitutionalDomains { get; set; } = new List<InstitutionalDomain>();
+
+    public virtual ICollection<InstitutionalRole> InstitutionalRoles { get; set; } = new List<InstitutionalRole>();
 }

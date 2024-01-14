@@ -8,5 +8,7 @@ namespace Eduverse.Backend.WebApi.Services.Interface
         public Task<SortedList<string, int>> GetStats();
 
         public Task<List<Inquery>> SearchInstitute(string institituteType);
+
+        public  Task ManageInstitutes(InstituteActions actions);
     }
 }

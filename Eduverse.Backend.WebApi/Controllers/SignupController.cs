@@ -39,7 +39,7 @@ namespace Eduverse.Backend.WebApi.Controllers
                     {
                         OtpGenerator otpGenerator = new();
                         bool isgenerate;
-                        int successCode = otpGenerator.generateOtp(otp.Id, otp.UserName, "mail", out isgenerate);
+                        int successCode = otpGenerator.generateOtpForSignUp(otp.Id, otp.UserName, "mail", out isgenerate);
                         ResponseModel.Otp requestModel = new();
                         if (successCode == 1)
                         {

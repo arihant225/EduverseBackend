@@ -10,11 +10,13 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IEduverseRepository, EduverseRepository>();
+builder.Services.AddScoped<IMailService, MailService>();
 builder.Services.AddScoped<ILoginService, LoginServices>();
 builder.Services.AddScoped<IDirectoryService, DirectoryService>();
 builder.Services.AddScoped<INotesService, NoteService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IInqueryService, InqueryService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 // Add services to the container.
 
 builder.Services.AddAuthentication(options =>

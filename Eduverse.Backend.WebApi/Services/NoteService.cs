@@ -14,9 +14,9 @@ namespace Eduverse.Backend.WebApi.Services
             eduverseRepository = repository;
         }
 
-        public async Task<Notes?> getNotesById(long id,string emailId,decimal phoneNumber) {
+        public async Task<Notes?> getNotesById(long id,string accessor) {
 
-            string? userId =await this.eduverseRepository.userId(emailId, phoneNumber);
+            string? userId =await this.eduverseRepository.userId(accessor);
             if(userId == null) {
                 return null;
             }
@@ -40,7 +40,7 @@ namespace Eduverse.Backend.WebApi.Services
 
         
         }
-        public async Task<Notes?> SaveNotes(string emailId, decimal phoneNo, Notes dto)
+        public async Task<Notes?> SaveNotes(string accessor, Notes dto)
         {
             Note? Entity = new();
             Entity.NotesId=dto.NotesId.GetValueOrDefault();
@@ -49,7 +49,7 @@ namespace Eduverse.Backend.WebApi.Services
             Entity.Body = dto.Body;
             Entity.BodyStyle= dto.BodyStyle;    
             Entity.IsPrivate = dto.IsPrivate;
-            Entity=await this.eduverseRepository.SaveNotes(emailId,phoneNo,Entity,dto.ParentFolderId);
+            Entity=await this.eduverseRepository.SaveNotes(accessor,Entity,dto.ParentFolderId);
             if(Entity!=null)
             dto.NotesId=Entity.NotesId ;
             if(Entity==null)

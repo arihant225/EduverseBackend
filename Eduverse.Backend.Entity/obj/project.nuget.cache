@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "iLkOeHD3fgeH2Ioq2LfHJpmlRIzJSBHHJkt1TN1jItWT+qoLDhfpR1qurVl4LZMFTuy7FKE5vAnjnl8RwS9R6A==",
+  "dgSpecHash": "LCuOVZoZ72KVsiKiMo9WL2nw/7MT525BM9igYa6ADSmHRt5yNdUnfvqIBeF2AnbAeb23V1LK4XOY0r2dWS20Pw==",
   "success": true,
   "projectFilePath": "C:\\Users\\jarih\\source\\repos\\Backend\\Eduverse.Backend.Entity\\Eduverse.Backend.Entity\\Eduverse.Backend.Entity.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\jarih\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
     "C:\\Users\\jarih\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",
+    "C:\\Users\\jarih\\.nuget\\packages\\csv\\2.0.93\\csv.2.0.93.nupkg.sha512",
     "C:\\Users\\jarih\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\jarih\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\1.1.1\\microsoft.bcl.asyncinterfaces.1.1.1.nupkg.sha512",
     "C:\\Users\\jarih\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",

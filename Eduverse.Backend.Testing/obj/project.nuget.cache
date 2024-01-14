@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "ZX4AYINHcj1B+Y4Dn9o/WGQZQ02EZ7nk3dvuqGKEbv14x6gDFOdqyz+yHmdj/UMfbvEsIk0p0tsOAoD5t9ABtA==",
+  "dgSpecHash": "gWvGvhZMVC6zPweqXCKguV1uEOWNDXJM9R6l5MtRbB588OryuSUNpqpmp6YYkhGw2kA81tUYyPCCSNyapNthdg==",
   "success": true,
   "projectFilePath": "C:\\Users\\jarih\\source\\repos\\Backend\\Eduverse.Backend.Entity\\Eduverse.Backend.Testing\\Eduverse.Backend.Testing.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\jarih\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
     "C:\\Users\\jarih\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",
+    "C:\\Users\\jarih\\.nuget\\packages\\csv\\2.0.93\\csv.2.0.93.nupkg.sha512",
     "C:\\Users\\jarih\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\1.1.1\\microsoft.bcl.asyncinterfaces.1.1.1.nupkg.sha512",
     "C:\\Users\\jarih\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
     "C:\\Users\\jarih\\.nuget\\packages\\microsoft.data.sqlclient\\5.0.2\\microsoft.data.sqlclient.5.0.2.nupkg.sha512",

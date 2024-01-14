@@ -13,7 +13,9 @@ namespace Eduverse.Backend.WebApi.Services
     public class InqueryService: IInqueryService
     {
         public readonly IEduverseRepository _repo;
-        public InqueryService(IEduverseRepository repo) {
+        public readonly IMailService _mailService;  
+        public InqueryService(IEduverseRepository repo,IMailService _mailService) {
+            this._mailService = _mailService;
             this._repo = repo;
         }
         
@@ -40,23 +42,7 @@ namespace Eduverse.Backend.WebApi.Services
 
         public int SendCopyOfProposal(RegisterdInstitute institute)
         {
-            int successStatus = -1;
-
-
-            SmtpMailCredential? mailCredential = _repo.getSMTPCredentials(SMTPCredentialsRole.otp);
-            if (mailCredential == null)
-                return -1;
-            using (SmtpClient client = new(mailCredential.Server, mailCredential.Port.GetValueOrDefault()))
-            {
-                client.EnableSsl = true;
-                client.Credentials = new NetworkCredential(mailCredential.EmailId, mailCredential.Password);
-                MailMessage message = new MailMessage(mailCredential.EmailId, institute.Email);
-                message.Subject = $"proposal Submitted : {institute.InstituteName}";
-
-                ;
-
-
-                message.Body = $"Hello,\n\n"
+            string body= $"Hello,\n\n"
                 + $"This is to confirm that your inquiry to Eduverse has been successfully Submitted.\n\n"
                 + $"Institute Name: {institute.InstituteName}\n"
                 + $"Institute Type: {institute.InstituteType}\n"
@@ -65,17 +51,9 @@ namespace Eduverse.Backend.WebApi.Services
                 + $"Inquery Number: {institute.Guidaccessor}\n\n"
                 + $"Thank you for choosing Eduverse!\n\n"
                 + $"Best regards,\nThe Eduverse Team";
-
-                try
-                {
-                    client.Send(message);
-                }
-                catch { }
-
-
-            }
-
-            return successStatus;
+            string subject= $"proposal Submitted : {institute.InstituteName}";
+            string? sender = institute.Email;
+            return _mailService.sendMail(sender, subject, body);
         }
 
         public async  Task<Inquery?> SearchProposal(string accessor)
@@ -97,5 +75,34 @@ namespace Eduverse.Backend.WebApi.Services
             };
             return inquery; 
         }
+
+        public Task<bool> validProposal(string accessor, string Id)
+        {
+         return   this._repo.Context.RegisterdInstitutes.AnyAsync(obj => obj.Guidaccessor == accessor && obj.Email == Id);
+        }
+        public async Task<bool> ModifyProposal(InstitutionalStatus status ,string proposal)
+            
+
+        {
+            RegisterdInstitute? inst = await this._repo.Context.RegisterdInstitutes.FirstOrDefaultAsync(inst => inst.Guidaccessor == proposal);
+
+            switch (status) {
+
+                case InstitutionalStatus.Withdrawn:
+                    if(inst!=null)
+                    {
+                        inst.Status = InstitutionalStatus.Withdrawn.ToString();
+                         this._repo.Context.RegisterdInstitutes.Update(inst);
+                        await this._repo.Context.SaveChangesAsync();
+                        return true;
+                    }
+                    break;
+
+
+            }
+
+            return false;
+        }
+
     }
 }
